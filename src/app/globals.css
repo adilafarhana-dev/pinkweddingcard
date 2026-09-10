@@ -1,0 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=Montserrat:wght@300;400;500;600;700&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-cormorant: 'Cormorant Garamond', serif;
+  --font-playfair: 'Playfair Display', serif;
+  --font-pinyon: 'Pinyon Script', cursive;
+  --font-montserrat: 'Montserrat', sans-serif;
+  --font-cinzel: 'Cinzel', serif;
+}
+
+body {
+  background-color: #FFFDF9;
+  color: #2B2325;
+  font-family: var(--font-cormorant);
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Luxury Gold Foil Gradients & Effects */
+.gold-text-gradient {
+  background: linear-gradient(135deg, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #FBF5B7 75%, #AA771C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-foil-bg {
+  background: linear-gradient(135deg, #BF953F 0%, #FCF6BA 28%, #B38728 50%, #FBF5B7 75%, #AA771C 100%);
+}
+
+.gold-border-gradient {
+  border-image: linear-gradient(135deg, #D4AF37 0%, #F9F1D8 50%, #AA8220 100%) 1;
+}
+
+.gold-box-shadow {
+  box-shadow: 0 10px 30px -10px rgba(212, 175, 55, 0.3), 0 0 1px 1px rgba(212, 175, 55, 0.4);
+}
+
+.paper-emboss-card {
+  background: #FFFDF9;
+  box-shadow: 
+    0 1px 3px rgba(184, 107, 114, 0.08),
+    0 15px 35px -5px rgba(184, 107, 114, 0.12),
+    inset 0 0 0 1px rgba(212, 175, 55, 0.25),
+    inset 0 2px 4px rgba(255, 255, 255, 0.8);
+}
+
+.wax-seal-3d {
+  background: radial-gradient(circle at 35% 35%, #F5DE88 0%, #D4AF37 40%, #8C6A18 85%, #59420A 100%);
+  box-shadow: 
+    0 8px 25px rgba(140, 106, 24, 0.45),
+    0 2px 6px rgba(0, 0, 0, 0.2),
+    inset 0 3px 6px rgba(255, 255, 255, 0.6),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* 3D Envelope Perspective Settings */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+/* Hide scrollbars for slick mobile look */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
