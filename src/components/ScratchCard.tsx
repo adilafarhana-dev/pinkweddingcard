@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef, useState, useImperativeHandle, forwardRef, useCallback } from "react";
 import confetti from "canvas-confetti";
-import { audioEngine } from "./AudioEngine";
 
 interface ScratchBoxProps {
   label: string;
@@ -251,7 +250,6 @@ export default function ScratchCard() {
 
       if (next.day && next.month && next.year) {
         setTimeout(() => {
-          audioEngine.playCelebrationChime();
           confetti({
             particleCount: 75,
             spread: 85,
@@ -268,7 +266,6 @@ export default function ScratchCard() {
 
   const handleRevealAll = () => {
     setRevealed({ day: true, month: true, year: true });
-    audioEngine.playCelebrationChime();
     confetti({
       particleCount: 65,
       spread: 80,
@@ -297,9 +294,8 @@ export default function ScratchCard() {
       yearRef.current?.autoScratch();
     }, 1800);
 
-    // 4. Celebration Chime & Confetti
+    // 4. Celebration Confetti (completely silent so only Kudmayi plays)
     setTimeout(() => {
-      audioEngine.playCelebrationChime();
       confetti({
         particleCount: 80,
         spread: 85,
