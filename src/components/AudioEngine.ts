@@ -1,45 +1,176 @@
-// Simple, Peaceful & Elegant Wedding Piano / Harp Melody
-// Clean, soft acoustic tones with zero harshness, pure and soothing
+// Audio Engine for Royal Digital Wedding Invitation
+// Default Background Song: "Kudmayi Reprise (Female Version)"
+// Features: High-quality audio stream, fade-in, loop, and graceful procedural synth fallback
+
+type AudioStateListener = (isPlaying: boolean) => void;
 
 class AudioEngine {
-  private ctx: AudioContext | null = null;
+  private audio: HTMLAudioElement | null = null;
   private isMusicPlaying: boolean = false;
-  private musicInterval: any = null;
-  private masterGain: GainNode | null = null;
-  private musicGain: GainNode | null = null;
+  private listeners: Set<AudioStateListener> = new Set();
 
-  private init() {
-    if (!this.ctx && typeof window !== 'undefined') {
+  // Web Audio Context for celebration chimes and procedural fallback
+  private ctx: AudioContext | null = null;
+  private masterGain: GainNode | null = null;
+  private synthGain: GainNode | null = null;
+  private synthInterval: any = null;
+  private useSynthFallback: boolean = false;
+
+  constructor() {
+    if (typeof window !== "undefined") {
+      this.initAudioElement();
+    }
+  }
+
+  private initAudioElement() {
+    if (this.audio) return;
+    try {
+      this.audio = new Audio("/kudmayi.m4a");
+      this.audio.loop = true;
+      this.audio.preload = "auto";
+      this.audio.volume = 0.8;
+
+      // Fallback to mp3 if m4a format isn't supported
+      this.audio.onerror = () => {
+        if (this.audio && this.audio.src.endsWith(".m4a")) {
+          this.audio.src = "/kudmayi.mp3";
+          this.audio.load();
+        } else {
+          // If media file fails entirely, enable procedural synth fallback
+          this.useSynthFallback = true;
+          if (this.isMusicPlaying) {
+            this.startSynthMusic();
+          }
+        }
+      };
+
+      this.audio.onplay = () => {
+        this.isMusicPlaying = true;
+        this.notifyListeners();
+      };
+
+      this.audio.onpause = () => {
+        this.isMusicPlaying = false;
+        this.notifyListeners();
+      };
+
+      this.audio.onended = () => {
+        this.isMusicPlaying = false;
+        this.notifyListeners();
+      };
+    } catch {
+      this.useSynthFallback = true;
+    }
+  }
+
+  private initWebAudio() {
+    if (!this.ctx && typeof window !== "undefined") {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       if (AudioCtx) {
         this.ctx = new AudioCtx();
-
         this.masterGain = this.ctx.createGain();
         this.masterGain.gain.setValueAtTime(0.85, this.ctx.currentTime);
         this.masterGain.connect(this.ctx.destination);
 
-        this.musicGain = this.ctx.createGain();
-        this.musicGain.gain.setValueAtTime(0.7, this.ctx.currentTime);
-        this.musicGain.connect(this.masterGain);
+        this.synthGain = this.ctx.createGain();
+        this.synthGain.gain.setValueAtTime(0.65, this.ctx.currentTime);
+        this.synthGain.connect(this.masterGain);
       }
     }
-    if (this.ctx && this.ctx.state === 'suspended') {
+    if (this.ctx && this.ctx.state === "suspended") {
       this.ctx.resume();
     }
   }
 
+  public subscribe(listener: AudioStateListener): () => void {
+    this.listeners.add(listener);
+    listener(this.isMusicPlaying);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  private notifyListeners() {
+    this.listeners.forEach((listener) => listener(this.isMusicPlaying));
+  }
+
+  public getIsPlaying(): boolean {
+    return this.isMusicPlaying;
+  }
+
+  public startMusic() {
+    this.initAudioElement();
+    this.initWebAudio();
+
+    if (!this.useSynthFallback && this.audio) {
+      this.audio.volume = 0.05;
+      const playPromise = this.audio.play();
+
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            this.isMusicPlaying = true;
+            this.notifyListeners();
+
+            // Smooth fade in to 0.8 volume over 1.2s
+            let vol = 0.05;
+            const fadeInInterval = setInterval(() => {
+              if (!this.audio || !this.isMusicPlaying) {
+                clearInterval(fadeInInterval);
+                return;
+              }
+              vol = Math.min(0.8, vol + 0.08);
+              this.audio.volume = vol;
+              if (vol >= 0.8) {
+                clearInterval(fadeInInterval);
+              }
+            }, 100);
+          })
+          .catch(() => {
+            // Autoplay policy prevented playback until user interaction, or file issue
+            // Fall back to synth if needed
+            this.startSynthMusic();
+          });
+      }
+    } else {
+      this.startSynthMusic();
+    }
+  }
+
+  public stopMusic() {
+    if (this.audio) {
+      this.audio.pause();
+    }
+    this.stopSynthMusic();
+    this.isMusicPlaying = false;
+    this.notifyListeners();
+  }
+
+  public toggleMusic(): boolean {
+    if (this.isMusicPlaying) {
+      this.stopMusic();
+      return false;
+    } else {
+      this.startMusic();
+      return true;
+    }
+  }
+
+  // =========================================================================
+  // CELEBRATION CHIME (GOLD FOIL REVEAL & SPARKS)
+  // =========================================================================
   public playCelebrationChime() {
-    this.init();
+    this.initWebAudio();
     if (!this.ctx || !this.masterGain) return;
 
     const now = this.ctx.currentTime;
-    const notes = [587.33, 739.99, 880.00, 1174.66]; // D5, F#5, A5, D6
+    const notes = [587.33, 739.99, 880.0, 1174.66]; // D5, F#5, A5, D6
     notes.forEach((note, idx) => {
       if (!this.ctx || !this.masterGain) return;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
 
-      osc.type = 'sine';
+      osc.type = "sine";
       osc.frequency.setValueAtTime(note, now + idx * 0.1);
 
       gain.gain.setValueAtTime(0.001, now + idx * 0.1);
@@ -54,45 +185,28 @@ class AudioEngine {
     });
   }
 
-  public toggleMusic(): boolean {
-    if (this.isMusicPlaying) {
-      this.stopMusic();
-      return false;
-    } else {
-      this.startMusic();
-      return true;
-    }
-  }
-
-  public getIsPlaying(): boolean {
-    return this.isMusicPlaying;
-  }
-
   // =========================================================================
-  // SIMPLE, SWEET & PEACEFUL ACOUSTIC PIANO / HARP CHORD ARPEGGIO
+  // PROCEDURAL BACKUP SYNTH (Only used if audio file is unavailable)
   // =========================================================================
   private playPianoNote(freq: number, duration: number, isBass: boolean = false) {
-    if (!this.ctx || !this.musicGain || !this.isMusicPlaying) return;
+    if (!this.ctx || !this.synthGain || !this.isMusicPlaying) return;
 
     const now = this.ctx.currentTime;
-
-    // Pure warm sine + gentle soft triangle blend for natural acoustic tone
     const osc1 = this.ctx.createOscillator();
     const osc2 = this.ctx.createOscillator();
     const noteGain = this.ctx.createGain();
 
-    osc1.type = 'sine';
-    osc2.type = 'triangle';
+    osc1.type = "sine";
+    osc2.type = "triangle";
 
     osc1.frequency.setValueAtTime(freq, now);
-    osc2.frequency.setValueAtTime(freq * 2, now); // Gentle warm harmonic
+    osc2.frequency.setValueAtTime(freq * 2, now);
 
-    // Soft low-pass filter to ensure smooth, mellow sound with zero harshness
     const filter = this.ctx.createBiquadFilter();
-    filter.type = 'lowpass';
+    filter.type = "lowpass";
     filter.frequency.setValueAtTime(isBass ? 450 : 1600, now);
 
-    const peakVolume = isBass ? 0.22 : 0.16;
+    const peakVolume = isBass ? 0.2 : 0.14;
 
     noteGain.gain.setValueAtTime(0.001, now);
     noteGain.gain.linearRampToValueAtTime(peakVolume, now + 0.03);
@@ -101,7 +215,7 @@ class AudioEngine {
     osc1.connect(filter);
     osc2.connect(filter);
     filter.connect(noteGain);
-    noteGain.connect(this.musicGain);
+    noteGain.connect(this.synthGain);
 
     osc1.start(now);
     osc2.start(now);
@@ -109,66 +223,54 @@ class AudioEngine {
     osc2.stop(now + duration + 0.1);
   }
 
-  public startMusic() {
-    this.init();
-    if (!this.ctx || !this.musicGain) return;
-    if (this.isMusicPlaying) return;
+  private startSynthMusic() {
+    this.initWebAudio();
+    if (!this.ctx || !this.synthGain) return;
     this.isMusicPlaying = true;
+    this.notifyListeners();
 
-    // Simple, timeless romantic progression (D major - A major - B minor - G major)
-    // Peaceful, gentle, slow tempo (approx 58 BPM)
     const melodyPattern: { freq: number; dur: number; isBass?: boolean }[] = [
-      // 1. D Major (Soft & Pure)
-      { freq: 146.83, dur: 2.2, isBass: true }, // D3 Bass
-      { freq: 293.66, dur: 1.2 },               // D4
-      { freq: 369.99, dur: 1.2 },               // F#4
-      { freq: 440.00, dur: 1.4 },               // A4
-      { freq: 587.33, dur: 1.8 },               // D5
-
-      // 2. A Major (Warm & Sweet)
-      { freq: 110.00, dur: 2.2, isBass: true }, // A2 Bass
-      { freq: 277.18, dur: 1.2 },               // C#4
-      { freq: 329.63, dur: 1.2 },               // E4
-      { freq: 440.00, dur: 1.4 },               // A4
-      { freq: 554.37, dur: 1.8 },               // C#5
-
-      // 3. B Minor (Gentle & Emotional)
-      { freq: 123.47, dur: 2.2, isBass: true }, // B2 Bass
-      { freq: 293.66, dur: 1.2 },               // D4
-      { freq: 369.99, dur: 1.2 },               // F#4
-      { freq: 493.88, dur: 1.4 },               // B4
-      { freq: 587.33, dur: 1.8 },               // D5
-
-      // 4. G Major (Peaceful Resolution)
-      { freq: 98.00, dur: 2.2, isBass: true },  // G2 Bass
-      { freq: 293.66, dur: 1.2 },               // D4
-      { freq: 392.00, dur: 1.2 },               // G4
-      { freq: 440.00, dur: 1.4 },               // A4
-      { freq: 493.88, dur: 2.0 },               // B4
+      { freq: 146.83, dur: 2.2, isBass: true },
+      { freq: 293.66, dur: 1.2 },
+      { freq: 369.99, dur: 1.2 },
+      { freq: 440.0, dur: 1.4 },
+      { freq: 587.33, dur: 1.8 },
+      { freq: 110.0, dur: 2.2, isBass: true },
+      { freq: 277.18, dur: 1.2 },
+      { freq: 329.63, dur: 1.2 },
+      { freq: 440.0, dur: 1.4 },
+      { freq: 554.37, dur: 1.8 },
+      { freq: 123.47, dur: 2.2, isBass: true },
+      { freq: 293.66, dur: 1.2 },
+      { freq: 369.99, dur: 1.2 },
+      { freq: 493.88, dur: 1.4 },
+      { freq: 587.33, dur: 1.8 },
+      { freq: 98.0, dur: 2.2, isBass: true },
+      { freq: 293.66, dur: 1.2 },
+      { freq: 392.0, dur: 1.2 },
+      { freq: 440.0, dur: 1.4 },
+      { freq: 493.88, dur: 2.0 },
     ];
 
     let step = 0;
-
     const playNextStep = () => {
-      if (!this.isMusicPlaying || !this.ctx || !this.musicGain) return;
+      if (!this.isMusicPlaying || !this.ctx || !this.synthGain) return;
 
       const note = melodyPattern[step];
       this.playPianoNote(note.freq, note.dur, !!note.isBass);
 
       step = (step + 1) % melodyPattern.length;
-      // Stagger notes softly every 550ms for a peaceful flowing harp/piano rhythm
       const interval = note.isBass ? 650 : 520;
-      this.musicInterval = setTimeout(playNextStep, interval);
+      this.synthInterval = setTimeout(playNextStep, interval);
     };
 
     playNextStep();
   }
 
-  public stopMusic() {
-    this.isMusicPlaying = false;
-    if (this.musicInterval) {
-      clearTimeout(this.musicInterval);
-      this.musicInterval = null;
+  private stopSynthMusic() {
+    if (this.synthInterval) {
+      clearTimeout(this.synthInterval);
+      this.synthInterval = null;
     }
   }
 }
