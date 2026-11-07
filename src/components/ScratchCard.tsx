@@ -47,12 +47,12 @@ function ScratchBox({ label, value, subValue, isRevealed, onRevealed }: ScratchB
 
     ctx.fillStyle = goldGrad;
     ctx.beginPath();
-    ctx.roundRect(0, 0, width, height, 18);
+    ctx.roundRect(0, 0, width, height, 16);
     ctx.fill();
 
     // Stardust Texture Specks
     ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-    for (let i = 0; i < 45; i++) {
+    for (let i = 0; i < 40; i++) {
       const rx = Math.random() * width;
       const ry = Math.random() * height;
       const rsize = Math.random() * 2 + 0.8;
@@ -64,10 +64,10 @@ function ScratchBox({ label, value, subValue, isRevealed, onRevealed }: ScratchB
     // Embossed "✦ Scratch ✦"
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = "bold 11px 'Montserrat', sans-serif";
+    ctx.font = "bold 10px 'Montserrat', sans-serif";
     ctx.letterSpacing = "1px";
 
-    ctx.fillStyle = "rgba(74, 52, 7, 0.4)";
+    ctx.fillStyle = "rgba(74, 52, 7, 0.35)";
     ctx.fillText("✦ Scratch ✦", width / 2, height / 2 + 1);
 
     ctx.fillStyle = "#593E08";
@@ -87,7 +87,7 @@ function ScratchBox({ label, value, subValue, isRevealed, onRevealed }: ScratchB
 
     ctx.globalCompositeOperation = "destination-out";
     ctx.beginPath();
-    ctx.arc(x, y, 20, 0, Math.PI * 2);
+    ctx.arc(x, y, 18, 0, Math.PI * 2);
     ctx.fill();
 
     checkProgress();
@@ -119,17 +119,17 @@ function ScratchBox({ label, value, subValue, isRevealed, onRevealed }: ScratchB
     }
 
     const percent = Math.round((transparentCount / totalSamples) * 100);
-    if (percent > 42 && !isRevealedRef.current) {
+    if (percent > 40 && !isRevealedRef.current) {
       onRevealed();
     }
   };
 
   return (
-    <div className="flex-1 max-w-[110px] flex flex-col items-center">
+    <div className="flex-1 max-w-[105px] min-w-[76px] flex flex-col items-center">
       {/* Scratch Box Card - fluid width with aspect-square */}
       <div
         ref={containerRef}
-        className="relative w-full aspect-square max-w-[110px] min-w-[85px] rounded-2xl overflow-hidden shadow-[0_10px_20px_-5px_rgba(212,175,55,0.35)] border border-goldFoil/30 bg-[#FFFDF9] flex items-center justify-center select-none"
+        className="relative w-full aspect-square max-w-[105px] min-w-[76px] rounded-2xl overflow-hidden shadow-[0_8px_18px_-4px_rgba(212,175,55,0.35)] border border-goldFoil/30 bg-[#FFFDF9] flex items-center justify-center select-none"
       >
         {/* Revealed Secret Underneath */}
         <div className="absolute inset-0 flex flex-col items-center justify-center p-2 bg-gradient-to-br from-[#FFFDF9] to-[#FAF3EE] text-center">
@@ -170,7 +170,7 @@ function ScratchBox({ label, value, subValue, isRevealed, onRevealed }: ScratchB
       </div>
 
       {/* Label Beneath (DAY / MONTH / YEAR) */}
-      <span className="font-playfair text-[11px] sm:text-xs font-bold tracking-[0.22em] text-[#8C6D37] uppercase mt-2.5">
+      <span className="font-playfair text-[10px] sm:text-xs font-bold tracking-[0.22em] text-[#8C6D37] uppercase mt-2">
         {label}
       </span>
     </div>
@@ -192,7 +192,7 @@ export default function ScratchCard() {
         setTimeout(() => {
           audioEngine.playCelebrationChime();
           confetti({
-            particleCount: 80,
+            particleCount: 75,
             spread: 85,
             origin: { y: 0.65 },
             colors: ["#D4AF37", "#F5E8C7", "#E8C5C8", "#FFFDF9", "#8B2635"],
@@ -209,7 +209,7 @@ export default function ScratchCard() {
     setRevealed({ day: true, month: true, year: true });
     audioEngine.playCelebrationChime();
     confetti({
-      particleCount: 70,
+      particleCount: 65,
       spread: 80,
       origin: { y: 0.65 },
       colors: ["#D4AF37", "#F5E8C7", "#E8C5C8", "#FFFDF9"],
@@ -217,9 +217,9 @@ export default function ScratchCard() {
   };
 
   return (
-    <section className="relative w-full py-10 px-3 sm:px-6 flex flex-col items-center justify-center bg-[#FFFDF9]">
+    <section className="relative w-full py-10 px-2 sm:px-6 flex flex-col items-center justify-center bg-[#FFFDF9]">
       {/* Header Matching User Reference Image */}
-      <div className="w-full max-w-sm text-center mb-6">
+      <div className="w-full max-w-sm text-center mb-5 px-2">
         <h3 className="font-script text-4xl sm:text-5xl text-[#6B1724] tracking-wide">
           The Date
         </h3>
@@ -228,8 +228,8 @@ export default function ScratchCard() {
         </p>
       </div>
 
-      {/* 3-BOX SCRATCH ROW: DAY | MONTH | YEAR - fluid responsive grid/flex */}
-      <div className="w-full max-w-[380px] flex items-center justify-center gap-2.5 sm:gap-4 mb-3 px-2">
+      {/* 3-BOX SCRATCH ROW: DAY | MONTH | YEAR - fluid responsive layout */}
+      <div className="w-full max-w-[360px] flex items-center justify-center gap-2 sm:gap-3.5 mb-3 px-1">
         <ScratchBox
           label="DAY"
           value="12"

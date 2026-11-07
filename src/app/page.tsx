@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState, useCallback } from "react";
 import DeviceFrame from "@/components/DeviceFrame";
 import PetalParticles from "@/components/PetalParticles";
 import MusicController from "@/components/MusicController";
+import AutoScrollController from "@/components/AutoScrollController";
 import EnvelopeCover from "@/components/EnvelopeCover";
 import HeroPalaceCourtyard from "@/components/HeroPalaceCourtyard";
 import ScratchCard from "@/components/ScratchCard";
@@ -13,7 +14,36 @@ import DestinationMap from "@/components/DestinationMap";
 import { ChevronUp } from "lucide-react";
 
 export default function WeddingInvitationPage() {
+  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
+
+  const handleStartAutoScroll = useCallback(() => {
+    setIsAutoScrolling(true);
+  }, []);
+
+  const handleStopAutoScroll = useCallback(() => {
+    setIsAutoScrolling(false);
+  }, []);
+
+  const handleToggleAutoScroll = useCallback(() => {
+    setIsAutoScrolling((prev) => !prev);
+  }, []);
+
+  // When first page envelope opens: automatically scroll down continuously into the card
+  const handleEnvelopeOpenComplete = useCallback(() => {
+    // 1. Smoothly scroll into the Hero Palace Courtyard section
+    const heroSection = document.getElementById("hero-palace-section");
+    if (heroSection) {
+      heroSection.scrollIntoView({ behavior: "smooth" });
+    }
+
+    // 2. Automatically start smooth scrolling down tour after brief pause
+    setTimeout(() => {
+      setIsAutoScrolling(true);
+    }, 1100);
+  }, []);
+
   const scrollToTop = () => {
+    setIsAutoScrolling(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -25,13 +55,20 @@ export default function WeddingInvitationPage() {
       {/* Floating Procedural Music Controller */}
       <MusicController />
 
-      {/* SECTION 1: 3D Embossed Envelope & Monogram Wax Seal Cover (100vh) */}
-      <EnvelopeCover />
+      {/* Automated Smooth Scrolling Tour Controller (Pill Toggle at Top Left) */}
+      <AutoScrollController
+        isAutoScrolling={isAutoScrolling}
+        onToggle={handleToggleAutoScroll}
+        onStop={handleStopAutoScroll}
+      />
 
-      {/* SECTION 2: Hero & Mughal Palace Courtyard Illustration */}
-      <HeroPalaceCourtyard />
+      {/* SECTION 1: 3D Embossed Envelope & Monogram Wax Seal Cover (100vh Full Screen) */}
+      <EnvelopeCover onOpenComplete={handleEnvelopeOpenComplete} />
 
-      {/* INTERACTIVE GOLD FOIL SCRATCH CARD SECTION */}
+      {/* SECTION 2: Hero & Mughal Palace Courtyard Illustration (Full Screen Width) */}
+      <HeroPalaceCourtyard onStartTour={handleStartAutoScroll} />
+
+      {/* INTERACTIVE GOLD FOIL SCRATCH CARD SECTION (DAY, MONTH, YEAR) */}
       <ScratchCard />
 
       {/* SECTION 3: Royal Timeline Itinerary (Baraat, Nikkah, Walima) */}

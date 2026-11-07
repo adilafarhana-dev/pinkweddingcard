@@ -2,10 +2,14 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { Sparkles, ChevronDown } from "lucide-react";
 import { audioEngine } from "./AudioEngine";
 
-export default function HeroPalaceCourtyard() {
+interface HeroPalaceCourtyardProps {
+  onStartTour?: () => void;
+}
+
+export default function HeroPalaceCourtyard({ onStartTour }: HeroPalaceCourtyardProps) {
   const [isPlayingMotion, setIsPlayingMotion] = useState(false);
 
   const handlePlayRomanticMoment = () => {
@@ -17,10 +21,10 @@ export default function HeroPalaceCourtyard() {
   return (
     <section
       id="hero-palace-section"
-      className="relative w-full pt-6 pb-6 px-3 sm:px-6 flex flex-col items-center justify-center bg-gradient-to-b from-[#F7EBEB] via-[#FFFDF9] to-[#FAF3EE] overflow-hidden"
+      className="relative w-full pt-6 pb-6 px-0 sm:px-4 flex flex-col items-center justify-center bg-gradient-to-b from-[#F7EBEB] via-[#FFFDF9] to-[#FAF3EE] overflow-hidden"
     >
       {/* Royal Matrimonial Header */}
-      <div className="w-full max-w-lg text-center mb-3 z-10 px-2">
+      <div className="w-full max-w-lg text-center mb-3 z-10 px-3">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -42,13 +46,13 @@ export default function HeroPalaceCourtyard() {
         </motion.div>
       </div>
 
-      {/* Romantic Card with Integrated Floral Arch & Couple Artwork */}
+      {/* Romantic Card with Integrated Floral Arch & Couple Artwork - TRUE FULL WIDTH ON MOBILE */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
+        initial={{ opacity: 0, scale: 0.99 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
-        className="relative w-full max-w-lg rounded-3xl overflow-hidden shadow-xl border-2 border-goldFoil/40 bg-[#FFFDF9] z-10 flex flex-col items-center"
+        className="relative w-full max-w-lg rounded-none sm:rounded-3xl overflow-hidden shadow-md sm:shadow-xl border-y sm:border-2 border-goldFoil/40 bg-[#FFFDF9] z-10 flex flex-col items-center"
       >
         {/* Artwork Display with Integrated Calligraphy inside Arch & Fairy Light Glow */}
         <div className="relative w-full aspect-[9/16] overflow-hidden bg-[#FAF4F0]">
@@ -103,17 +107,17 @@ export default function HeroPalaceCourtyard() {
             <span className="font-playfair text-[10px] tracking-[0.3em] uppercase text-goldFoil-dark font-bold">
               The Royal Union
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl text-charcoal-ink font-normal tracking-wide mt-1">
-              Danial <span className="font-script text-3xl text-dustyRose-500">&amp;</span> Ayla
+            <h2 className="font-serif text-2xl sm:text-4xl text-charcoal-ink font-normal tracking-wide mt-1">
+              Danial <span className="font-script text-2xl sm:text-3xl text-dustyRose-500">&amp;</span> Ayla
             </h2>
             <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-goldFoil to-transparent mx-auto my-2" />
-            <p className="font-serif text-[13px] sm:text-sm text-charcoal-soft leading-relaxed italic max-w-[260px]">
+            <p className="font-serif text-[12px] sm:text-sm text-charcoal-soft leading-relaxed italic max-w-[260px]">
               “Where love begins in tranquility and echoes for eternity.”
             </p>
           </div>
 
-          {/* Cinematic Animate Romantic Moment Button */}
-          <div className="absolute top-4 left-4 z-20">
+          {/* Romantic Moment Chime Button (Placed bottom-left inside arch image to avoid colliding with top fixed buttons) */}
+          <div className="absolute bottom-4 left-4 z-20">
             <button
               onClick={handlePlayRomanticMoment}
               type="button"
@@ -125,14 +129,26 @@ export default function HeroPalaceCourtyard() {
           </div>
         </div>
 
-        {/* Card Footer Quote */}
-        <div className="p-4 text-center bg-[#FFFDF9] w-full border-t border-dustyRose-100">
+        {/* Card Footer Quote & Quick Start Auto Tour Button */}
+        <div className="p-4 text-center bg-[#FFFDF9] w-full border-t border-dustyRose-100 flex flex-col items-center">
           <p className="font-serif text-xs sm:text-sm text-charcoal-soft leading-relaxed italic max-w-xs mx-auto">
             “And of His signs is that He created for you spouses from among yourselves, that you may dwell in tranquility with them...”
           </p>
           <span className="block text-[10px] font-sans tracking-widest text-goldFoil-dark font-bold uppercase mt-1">
             Surah Ar-Rum • 30:21
           </span>
+
+          {/* Optional Quick Start Auto Tour Pill */}
+          {onStartTour && (
+            <button
+              onClick={onStartTour}
+              type="button"
+              className="mt-3 flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-goldFoil/50 bg-[#FAF5F0] hover:bg-goldFoil/15 text-goldFoil-dark text-xs font-playfair font-semibold tracking-wider uppercase shadow-sm transition-all active:scale-95 group"
+            >
+              <span>Auto Tour Invitation</span>
+              <ChevronDown className="w-3.5 h-3.5 text-goldFoil-dark group-hover:translate-y-0.5 transition-transform" />
+            </button>
+          )}
         </div>
       </motion.div>
     </section>
