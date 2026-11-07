@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useImperativeHandle, forwardRef, useCallback } from "react";
 import confetti from "canvas-confetti";
 import { audioEngine } from "./AudioEngine";
 
@@ -12,7 +12,14 @@ interface ScratchBoxProps {
   onRevealed: () => void;
 }
 
-function ScratchBox({ label, value, subValue, isRevealed, onRevealed }: ScratchBoxProps) {
+export interface ScratchBoxHandle {
+  autoScratch: () => void;
+}
+
+const ScratchBox = forwardRef<ScratchBoxHandle, ScratchBoxProps>(function ScratchBox(
+  { label, value, subValue, isRevealed, onRevealed },
+  ref
+) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [isScratching, setIsScratching] = useState(false);
@@ -74,6 +81,55 @@ function ScratchBox({ label, value, subValue, isRevealed, onRevealed }: ScratchB
     ctx.fillText("✦ Scratch ✦", width / 2, height / 2);
   }, []);
 
+  // Expose automatic scratch animation method
+  useImperativeHandle(ref, () => ({
+    autoScratch: () => {
+      if (isRevealedRef.current) return;
+      const canvas = canvasRef.current;
+      if (!canvas) {
+        onRevealed();
+        return;
+      }
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        onRevealed();
+        return;
+      }
+
+      const w = containerRef.current?.clientWidth || 95;
+      const h = containerRef.current?.clientHeight || 95;
+
+      ctx.globalCompositeOperation = "destination-out";
+
+      let step = 0;
+      const totalSteps = 16;
+      const timer = setInterval(() => {
+        step++;
+        const progress = step / totalSteps;
+
+        // Zig-zag sweeping scratch pattern across the box
+        const y = progress * (h * 0.85) + h * 0.08;
+        const xOffset = Math.sin(progress * Math.PI * 3) * (w * 0.32);
+        const x = w / 2 + xOffset;
+
+        ctx.beginPath();
+        ctx.arc(x, y, 22, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Additional center clear
+        ctx.beginPath();
+        ctx.arc(w / 2 + (Math.random() - 0.5) * 20, h / 2 + (Math.random() - 0.5) * 20, 18, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (step >= totalSteps) {
+          clearInterval(timer);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          onRevealed();
+        }
+      }, 25);
+    },
+  }));
+
   const scratch = (clientX: number, clientY: number) => {
     if (isRevealedRef.current) return;
     const canvas = canvasRef.current;
@@ -119,7 +175,7 @@ function ScratchBox({ label, value, subValue, isRevealed, onRevealed }: ScratchB
     }
 
     const percent = Math.round((transparentCount / totalSamples) * 100);
-    if (percent > 40 && !isRevealedRef.current) {
+    if (percent > 38 && !isRevealedRef.current) {
       onRevealed();
     }
   };
@@ -175,7 +231,7 @@ function ScratchBox({ label, value, subValue, isRevealed, onRevealed }: ScratchB
       </span>
     </div>
   );
-}
+});
 
 export default function ScratchCard() {
   const [revealed, setRevealed] = useState({
@@ -183,6 +239,11 @@ export default function ScratchCard() {
     month: false,
     year: false,
   });
+
+  const dayRef = useRef<ScratchBoxHandle | null>(null);
+  const monthRef = useRef<ScratchBoxHandle | null>(null);
+  const yearRef = useRef<ScratchBoxHandle | null>(null);
+  const hasAutoScratchedRef = useRef(false);
 
   const handleRevealBox = (box: "day" | "month" | "year") => {
     setRevealed((prev) => {
@@ -216,8 +277,65 @@ export default function ScratchCard() {
     });
   };
 
+  // Automatically scratch boxes one by one: DAY -> MONTH -> YEAR
+  const triggerAutoScratchSequence = useCallback(() => {
+    if (hasAutoScratchedRef.current) return;
+    hasAutoScratchedRef.current = true;
+
+    // 1. Scratch DAY (12)
+    setTimeout(() => {
+      dayRef.current?.autoScratch();
+    }, 400);
+
+    // 2. Scratch MONTH (OCT)
+    setTimeout(() => {
+      monthRef.current?.autoScratch();
+    }, 1100);
+
+    // 3. Scratch YEAR (2026)
+    setTimeout(() => {
+      yearRef.current?.autoScratch();
+    }, 1800);
+
+    // 4. Celebration Chime & Confetti
+    setTimeout(() => {
+      audioEngine.playCelebrationChime();
+      confetti({
+        particleCount: 80,
+        spread: 85,
+        origin: { y: 0.65 },
+        colors: ["#D4AF37", "#F5E8C7", "#E8C5C8", "#FFFDF9", "#8B2635"],
+        ticks: 180,
+        gravity: 0.85,
+      });
+    }, 2400);
+  }, []);
+
+  // Trigger automatic one-by-one scratch when the section scrolls into view
+  useEffect(() => {
+    const section = document.getElementById("date-scratch-section");
+    if (!section) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasAutoScratchedRef.current) {
+            triggerAutoScratchSequence();
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, [triggerAutoScratchSequence]);
+
   return (
-    <section className="relative w-full py-10 px-2 sm:px-6 flex flex-col items-center justify-center bg-[#FFFDF9]">
+    <section
+      id="date-scratch-section"
+      className="relative w-full py-10 px-2 sm:px-6 flex flex-col items-center justify-center bg-[#FFFDF9]"
+    >
       {/* Header Matching User Reference Image */}
       <div className="w-full max-w-sm text-center mb-5 px-2">
         <h3 className="font-script text-4xl sm:text-5xl text-[#6B1724] tracking-wide">
@@ -231,6 +349,7 @@ export default function ScratchCard() {
       {/* 3-BOX SCRATCH ROW: DAY | MONTH | YEAR - fluid responsive layout */}
       <div className="w-full max-w-[360px] flex items-center justify-center gap-2 sm:gap-3.5 mb-3 px-1">
         <ScratchBox
+          ref={dayRef}
           label="DAY"
           value="12"
           subValue="Monday"
@@ -239,6 +358,7 @@ export default function ScratchCard() {
         />
 
         <ScratchBox
+          ref={monthRef}
           label="MONTH"
           value="OCT"
           subValue="October"
@@ -247,6 +367,7 @@ export default function ScratchCard() {
         />
 
         <ScratchBox
+          ref={yearRef}
           label="YEAR"
           value="2026"
           subValue="1448 AH"

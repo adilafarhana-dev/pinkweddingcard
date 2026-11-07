@@ -2,14 +2,10 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, ChevronDown } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { audioEngine } from "./AudioEngine";
 
-interface HeroPalaceCourtyardProps {
-  onStartTour?: () => void;
-}
-
-export default function HeroPalaceCourtyard({ onStartTour }: HeroPalaceCourtyardProps) {
+export default function HeroPalaceCourtyard() {
   const [isPlayingMotion, setIsPlayingMotion] = useState(false);
 
   const handlePlayRomanticMoment = () => {
@@ -116,7 +112,7 @@ export default function HeroPalaceCourtyard({ onStartTour }: HeroPalaceCourtyard
             </p>
           </div>
 
-          {/* Romantic Moment Chime Button (Placed bottom-left inside arch image to avoid colliding with top fixed buttons) */}
+          {/* Romantic Moment Chime Button (Placed bottom-left inside arch image to avoid colliding with top buttons) */}
           <div className="absolute bottom-4 left-4 z-20">
             <button
               onClick={handlePlayRomanticMoment}
@@ -129,7 +125,7 @@ export default function HeroPalaceCourtyard({ onStartTour }: HeroPalaceCourtyard
           </div>
         </div>
 
-        {/* Card Footer Quote & Quick Start Auto Tour Button */}
+        {/* Card Footer Quote */}
         <div className="p-4 text-center bg-[#FFFDF9] w-full border-t border-dustyRose-100 flex flex-col items-center">
           <p className="font-serif text-xs sm:text-sm text-charcoal-soft leading-relaxed italic max-w-xs mx-auto">
             “And of His signs is that He created for you spouses from among yourselves, that you may dwell in tranquility with them...”
@@ -137,18 +133,6 @@ export default function HeroPalaceCourtyard({ onStartTour }: HeroPalaceCourtyard
           <span className="block text-[10px] font-sans tracking-widest text-goldFoil-dark font-bold uppercase mt-1">
             Surah Ar-Rum • 30:21
           </span>
-
-          {/* Optional Quick Start Auto Tour Pill */}
-          {onStartTour && (
-            <button
-              onClick={onStartTour}
-              type="button"
-              className="mt-3 flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-goldFoil/50 bg-[#FAF5F0] hover:bg-goldFoil/15 text-goldFoil-dark text-xs font-playfair font-semibold tracking-wider uppercase shadow-sm transition-all active:scale-95 group"
-            >
-              <span>Auto Tour Invitation</span>
-              <ChevronDown className="w-3.5 h-3.5 text-goldFoil-dark group-hover:translate-y-0.5 transition-transform" />
-            </button>
-          )}
         </div>
       </motion.div>
     </section>

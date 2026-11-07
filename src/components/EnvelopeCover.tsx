@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { Sparkles, Mail } from "lucide-react";
@@ -14,10 +14,24 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDissolved, setIsDissolved] = useState(false);
 
+  // Lock scrolling so the first page stays fixed until opened ("keep first page first")
+  useEffect(() => {
+    if (!isDissolved) {
+      document.body.style.overflow = "hidden";
+      window.scrollTo(0, 0);
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isDissolved]);
+
   const handleOpenEnvelope = (clientX?: number, clientY?: number) => {
     if (isOpen) return;
 
-    // Start background romantic music smoothly on this page when opened
+    // Start Kudmayi Reprise (Female) background music
     if (!audioEngine.getIsPlaying()) {
       audioEngine.startMusic();
     }
@@ -38,9 +52,10 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
 
     setIsOpen(true);
 
-    // Flaps unfold slowly (2.5s), dissolve, and automatically scroll down into the invitation
+    // Flaps unfold slowly (2.5s), then automatically dissolve and remove first page
     setTimeout(() => {
       setIsDissolved(true);
+      document.body.style.overflow = "auto";
       if (onOpenComplete) {
         onOpenComplete();
       }
@@ -50,6 +65,7 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
   const handleResetEnvelope = () => {
     setIsDissolved(false);
     setIsOpen(false);
+    document.body.style.overflow = "hidden";
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
