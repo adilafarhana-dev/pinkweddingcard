@@ -19,7 +19,6 @@ function ScratchBox({ label, value, subValue, isRevealed, onRevealed }: ScratchB
   const isRevealedRef = useRef(isRevealed);
   isRevealedRef.current = isRevealed;
 
-  // Initialize Canvas Gold Foil Layer
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -68,11 +67,9 @@ function ScratchBox({ label, value, subValue, isRevealed, onRevealed }: ScratchB
     ctx.font = "bold 11px 'Montserrat', sans-serif";
     ctx.letterSpacing = "1px";
 
-    // Text Shadow
     ctx.fillStyle = "rgba(74, 52, 7, 0.4)";
     ctx.fillText("✦ Scratch ✦", width / 2, height / 2 + 1);
 
-    // Main Text
     ctx.fillStyle = "#593E08";
     ctx.fillText("✦ Scratch ✦", width / 2, height / 2);
   }, []);
@@ -128,11 +125,11 @@ function ScratchBox({ label, value, subValue, isRevealed, onRevealed }: ScratchB
   };
 
   return (
-    <div className="flex flex-col items-center">
-      {/* Scratch Box Card */}
+    <div className="flex-1 max-w-[110px] flex flex-col items-center">
+      {/* Scratch Box Card - fluid width with aspect-square */}
       <div
         ref={containerRef}
-        className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shadow-[0_10px_20px_-5px_rgba(212,175,55,0.35)] border border-goldFoil/30 bg-[#FFFDF9] flex items-center justify-center select-none"
+        className="relative w-full aspect-square max-w-[110px] min-w-[85px] rounded-2xl overflow-hidden shadow-[0_10px_20px_-5px_rgba(212,175,55,0.35)] border border-goldFoil/30 bg-[#FFFDF9] flex items-center justify-center select-none"
       >
         {/* Revealed Secret Underneath */}
         <div className="absolute inset-0 flex flex-col items-center justify-center p-2 bg-gradient-to-br from-[#FFFDF9] to-[#FAF3EE] text-center">
@@ -140,7 +137,7 @@ function ScratchBox({ label, value, subValue, isRevealed, onRevealed }: ScratchB
             {value}
           </span>
           {subValue && (
-            <span className="font-sans text-[9px] uppercase tracking-wider text-dustyRose-500 font-semibold mt-0.5">
+            <span className="font-sans text-[8px] sm:text-[9px] uppercase tracking-wider text-dustyRose-500 font-semibold mt-0.5">
               {subValue}
             </span>
           )}
@@ -173,7 +170,7 @@ function ScratchBox({ label, value, subValue, isRevealed, onRevealed }: ScratchB
       </div>
 
       {/* Label Beneath (DAY / MONTH / YEAR) */}
-      <span className="font-playfair text-[11px] sm:text-xs font-bold tracking-[0.25em] text-[#8C6D37] uppercase mt-2.5">
+      <span className="font-playfair text-[11px] sm:text-xs font-bold tracking-[0.22em] text-[#8C6D37] uppercase mt-2.5">
         {label}
       </span>
     </div>
@@ -220,19 +217,19 @@ export default function ScratchCard() {
   };
 
   return (
-    <section className="relative w-full py-10 px-4 sm:px-6 flex flex-col items-center justify-center bg-[#FFFDF9]">
+    <section className="relative w-full py-10 px-3 sm:px-6 flex flex-col items-center justify-center bg-[#FFFDF9]">
       {/* Header Matching User Reference Image */}
       <div className="w-full max-w-sm text-center mb-6">
         <h3 className="font-script text-4xl sm:text-5xl text-[#6B1724] tracking-wide">
           The Date
         </h3>
-        <p className="font-playfair text-[11px] sm:text-xs tracking-[0.25em] text-[#8C6D37] font-semibold uppercase mt-1">
+        <p className="font-playfair text-[10px] sm:text-xs tracking-[0.25em] text-[#8C6D37] font-semibold uppercase mt-1">
           ✦ SCRATCH TO REVEAL THE DATE ✦
         </p>
       </div>
 
-      {/* 3-BOX SCRATCH ROW: DAY | MONTH | YEAR */}
-      <div className="w-full max-w-[360px] flex items-center justify-center gap-3 sm:gap-4 mb-3">
+      {/* 3-BOX SCRATCH ROW: DAY | MONTH | YEAR - fluid responsive grid/flex */}
+      <div className="w-full max-w-[380px] flex items-center justify-center gap-2.5 sm:gap-4 mb-3 px-2">
         <ScratchBox
           label="DAY"
           value="12"

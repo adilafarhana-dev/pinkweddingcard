@@ -4,9 +4,10 @@ import "./globals.css";
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  themeColor: "#FAF3ED",
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: "cover",
+  themeColor: "#FFFDF9",
 };
 
 export const metadata: Metadata = {
@@ -20,8 +21,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <body className="bg-[#FAF6F0] text-charcoal-ink antialiased selection:bg-dustyRose-200 selection:text-charcoal-ink">
+    <html lang="en" className="scroll-smooth w-full overflow-x-hidden">
+      <body className="bg-[#FFFDF9] text-charcoal-ink antialiased selection:bg-dustyRose-200 selection:text-charcoal-ink w-full min-h-screen overflow-x-hidden">
         {children}
       </body>
     </html>

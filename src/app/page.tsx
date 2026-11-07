@@ -44,17 +44,17 @@ export default function WeddingInvitationPage() {
       <DestinationMap />
 
       {/* Luxury Editorial Footer */}
-      <footer className="w-full py-8 px-4 bg-[#FAF5F0] border-t border-dustyRose-200/60 text-center flex flex-col items-center">
+      <footer className="w-full py-10 px-4 bg-[#FAF5F0] border-t border-dustyRose-200/60 text-center flex flex-col items-center">
         <button
           onClick={scrollToTop}
           type="button"
-          className="mb-4 p-2 rounded-full border border-goldFoil/40 text-goldFoil-dark hover:bg-goldFoil/10 transition-colors"
+          className="mb-4 p-2.5 rounded-full border border-goldFoil/40 text-goldFoil-dark hover:bg-goldFoil/10 transition-colors active:scale-95"
           title="Return to top"
         >
           <ChevronUp className="w-4 h-4" />
         </button>
 
-        <span className="font-script text-2xl text-goldFoil-dark">
+        <span className="font-script text-2xl sm:text-3xl text-goldFoil-dark">
           Danial &amp; Ayla
         </span>
         <p className="font-playfair text-[10px] tracking-[0.25em] text-charcoal-muted uppercase mt-1">

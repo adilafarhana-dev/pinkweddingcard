@@ -17,9 +17,9 @@ export default function DestinationMap() {
   };
 
   return (
-    <section className="relative w-full py-10 px-4 sm:px-6 bg-[#FAF5F0] flex flex-col items-center">
+    <section className="relative w-full py-10 px-3 sm:px-6 bg-[#FAF5F0] flex flex-col items-center">
       {/* Section Header */}
-      <div className="w-full max-w-[390px] text-center mb-6">
+      <div className="w-full max-w-lg text-center mb-6 px-2">
         <span className="font-script text-3xl text-goldFoil-dark block">
           The Royal Destination
         </span>
@@ -35,7 +35,7 @@ export default function DestinationMap() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.7 }}
-        className="w-full max-w-[390px] rounded-2xl overflow-hidden paper-emboss-card border-2 border-goldFoil/35 shadow-xl bg-[#FFFDF9]"
+        className="w-full max-w-lg rounded-2xl overflow-hidden paper-emboss-card border-2 border-goldFoil/35 shadow-xl bg-[#FFFDF9]"
       >
         {/* Map Header Banner */}
         <div className="p-4 bg-gradient-to-r from-[#FAF3ED] to-[#F7EBEB] border-b border-dustyRose-200 flex items-center justify-between">
@@ -56,7 +56,7 @@ export default function DestinationMap() {
         </div>
 
         {/* Embedded Interactive Google Map */}
-        <div className="relative w-full h-56 bg-[#F2EFE9] overflow-hidden">
+        <div className="relative w-full h-56 sm:h-64 bg-[#F2EFE9] overflow-hidden">
           <iframe
             title="Taj Palace New Delhi Map"
             src="https://maps.google.com/maps?q=Taj+Palace+New+Delhi+Diplomatic+Enclave&t=&z=14&ie=UTF8&iwloc=&output=embed"
@@ -67,13 +67,12 @@ export default function DestinationMap() {
         </div>
 
         {/* Venue Address & Action Buttons */}
-        <div className="p-4 bg-[#FFFDF9] flex flex-col gap-3">
-          <p className="font-serif text-xs text-charcoal-soft text-left leading-relaxed">
+        <div className="p-4 sm:p-5 bg-[#FFFDF9] flex flex-col gap-3">
+          <p className="font-serif text-xs sm:text-sm text-charcoal-soft text-left leading-relaxed">
             {venueAddress}
           </p>
 
           <div className="flex items-center gap-2">
-            {/* Functional Blue "Get Directions" Button */}
             <a
               href={directionsUrl}
               target="_blank"
@@ -84,7 +83,6 @@ export default function DestinationMap() {
               Get Directions
             </a>
 
-            {/* Copy Address Button */}
             <button
               type="button"
               onClick={handleCopyAddress}

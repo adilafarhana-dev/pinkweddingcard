@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, Heart, Play, Volume2 } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { audioEngine } from "./AudioEngine";
 
 export default function HeroPalaceCourtyard() {
@@ -17,10 +17,10 @@ export default function HeroPalaceCourtyard() {
   return (
     <section
       id="hero-palace-section"
-      className="relative w-full pt-6 pb-6 px-4 sm:px-6 flex flex-col items-center justify-center bg-gradient-to-b from-[#F7EBEB] via-[#FFFDF9] to-[#FAF3EE] overflow-hidden"
+      className="relative w-full pt-6 pb-6 px-3 sm:px-6 flex flex-col items-center justify-center bg-gradient-to-b from-[#F7EBEB] via-[#FFFDF9] to-[#FAF3EE] overflow-hidden"
     >
       {/* Royal Matrimonial Header */}
-      <div className="w-full max-w-md mx-auto text-center mb-3 z-10">
+      <div className="w-full max-w-lg text-center mb-3 z-10 px-2">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -42,13 +42,13 @@ export default function HeroPalaceCourtyard() {
         </motion.div>
       </div>
 
-      {/* Romantic Full-Screen Card with Integrated Floral Arch & Couple */}
+      {/* Romantic Card with Integrated Floral Arch & Couple Artwork */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.97 }}
+        initial={{ opacity: 0, scale: 0.98 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
-        className="relative w-full max-w-[390px] rounded-3xl overflow-hidden shadow-2xl border-2 border-goldFoil/40 bg-[#FFFDF9] z-10 flex flex-col items-center"
+        className="relative w-full max-w-lg rounded-3xl overflow-hidden shadow-xl border-2 border-goldFoil/40 bg-[#FFFDF9] z-10 flex flex-col items-center"
       >
         {/* Artwork Display with Integrated Calligraphy inside Arch & Fairy Light Glow */}
         <div className="relative w-full aspect-[9/16] overflow-hidden bg-[#FAF4F0]">
@@ -99,7 +99,7 @@ export default function HeroPalaceCourtyard() {
           </div>
 
           {/* Elegant Overlaid Typography Inside the Palace Archway */}
-          <div className="absolute top-[22%] inset-x-0 flex flex-col items-center text-center px-6 pointer-events-none">
+          <div className="absolute top-[22%] inset-x-0 flex flex-col items-center text-center px-4 sm:px-6 pointer-events-none">
             <span className="font-playfair text-[10px] tracking-[0.3em] uppercase text-goldFoil-dark font-bold">
               The Royal Union
             </span>
@@ -107,17 +107,17 @@ export default function HeroPalaceCourtyard() {
               Danial <span className="font-script text-3xl text-dustyRose-500">&amp;</span> Ayla
             </h2>
             <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-goldFoil to-transparent mx-auto my-2" />
-            <p className="font-serif text-[13px] sm:text-sm text-charcoal-soft leading-relaxed italic max-w-[240px]">
+            <p className="font-serif text-[13px] sm:text-sm text-charcoal-soft leading-relaxed italic max-w-[260px]">
               “Where love begins in tranquility and echoes for eternity.”
             </p>
           </div>
 
-          {/* Cinematic Play / Animate Romantic Moment Button */}
+          {/* Cinematic Animate Romantic Moment Button */}
           <div className="absolute top-4 left-4 z-20">
             <button
               onClick={handlePlayRomanticMoment}
               type="button"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FFFDF9]/85 hover:bg-[#FFFDF9] border border-goldFoil/40 shadow-md backdrop-blur-md text-charcoal-ink text-[11px] font-playfair font-semibold transition-all active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FFFDF9]/90 hover:bg-[#FFFDF9] border border-goldFoil/40 shadow-md backdrop-blur-md text-charcoal-ink text-[11px] font-playfair font-semibold transition-all active:scale-95"
             >
               <Sparkles className="w-3 h-3 text-goldFoil animate-spin" style={{ animationDuration: "6s" }} />
               <span>{isPlayingMotion ? "Enchanting..." : "Animate"}</span>

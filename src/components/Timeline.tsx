@@ -30,23 +30,23 @@ export default function Timeline() {
   ];
 
   return (
-    <section className="relative w-full py-10 px-4 sm:px-6 bg-gradient-to-b from-[#FAF3ED] via-[#FFFDF9] to-[#F7EBEB] flex flex-col items-center">
+    <section className="relative w-full py-10 px-3 sm:px-6 bg-gradient-to-b from-[#FAF3ED] via-[#FFFDF9] to-[#F7EBEB] flex flex-col items-center">
       {/* Section Header */}
-      <div className="w-full max-w-[390px] text-center mb-8">
+      <div className="w-full max-w-lg text-center mb-8 px-2">
         <span className="font-script text-2xl sm:text-3xl text-goldFoil-dark block">
           Auspicious Timings
         </span>
         <h3 className="font-serif text-3xl sm:text-4xl text-charcoal-ink font-light tracking-wide mt-1">
           The Wedding Itinerary
         </h3>
-        <p className="font-playfair text-[11px] tracking-[0.25em] uppercase text-charcoal-muted font-semibold mt-1">
+        <p className="font-playfair text-[10px] sm:text-[11px] tracking-[0.25em] uppercase text-charcoal-muted font-semibold mt-1">
           Monday • October 12, 2026
         </p>
         <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-goldFoil to-transparent mx-auto mt-3" />
       </div>
 
       {/* Vertical Timeline Container */}
-      <div className="relative w-full max-w-[390px]">
+      <div className="relative w-full max-w-lg">
         {/* Golden Central/Left Stem Line */}
         <div className="absolute top-4 bottom-4 left-6 sm:left-8 w-[2px] bg-gradient-to-b from-goldFoil via-goldFoil-shimmer to-dustyRose-300" />
 
@@ -66,7 +66,7 @@ export default function Timeline() {
               </div>
 
               {/* Event Card */}
-              <div className="w-full p-4 rounded-2xl paper-emboss-card border border-dustyRose-200/80 shadow-sm bg-gradient-to-br from-[#FFFDF9] to-[#FAF5F0] hover:shadow-md transition-shadow">
+              <div className="w-full p-4 sm:p-5 rounded-2xl paper-emboss-card border border-dustyRose-200/80 shadow-sm bg-gradient-to-br from-[#FFFDF9] to-[#FAF5F0] hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-playfair text-xs tracking-[0.18em] text-goldFoil-dark font-bold uppercase">
                     {item.time}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Volume2, VolumeX, Music } from "lucide-react";
+import { Volume2, Music } from "lucide-react";
 import { audioEngine } from "./AudioEngine";
 
 export default function MusicController() {
@@ -13,7 +13,7 @@ export default function MusicController() {
   };
 
   return (
-    <div className="fixed top-4 right-4 z-[60] select-none">
+    <div className="fixed top-4 right-4 sm:top-6 sm:right-6 z-[60] select-none pointer-events-auto">
       <button
         onClick={toggleMusic}
         type="button"

@@ -8,9 +8,9 @@ interface DeviceFrameProps {
 
 export default function DeviceFrame({ children }: DeviceFrameProps) {
   return (
-    <main className="min-h-screen w-full bg-[#FAF5F0] flex flex-col items-center overflow-x-hidden">
-      {/* Seamless full-screen responsive container without device simulator frames */}
-      <div className="w-full max-w-md sm:max-w-lg mx-auto flex flex-col items-center bg-[#FFFDF9] min-h-screen relative shadow-2xl border-x border-dustyRose-200/40">
+    <main className="min-h-screen w-full bg-[#FFFDF9] flex flex-col items-center overflow-x-hidden">
+      {/* True full-screen responsive container: edge-to-edge on mobile, elegantly centered on desktop */}
+      <div className="w-full max-w-xl mx-auto flex flex-col items-center bg-[#FFFDF9] min-h-screen relative px-0">
         {children}
       </div>
     </main>
