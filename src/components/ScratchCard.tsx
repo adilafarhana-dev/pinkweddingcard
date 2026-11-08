@@ -1,7 +1,15 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useImperativeHandle, forwardRef, useCallback } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useImperativeHandle,
+  forwardRef,
+  useCallback,
+} from "react";
 import confetti from "canvas-confetti";
+import { Sparkles, RotateCcw } from "lucide-react";
 
 interface ScratchBoxProps {
   label: string;
@@ -13,6 +21,7 @@ interface ScratchBoxProps {
 
 export interface ScratchBoxHandle {
   autoScratch: () => void;
+  reset: () => void;
 }
 
 const ScratchBox = forwardRef<ScratchBoxHandle, ScratchBoxProps>(function ScratchBox(
@@ -22,10 +31,11 @@ const ScratchBox = forwardRef<ScratchBoxHandle, ScratchBoxProps>(function Scratc
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [isScratching, setIsScratching] = useState(false);
+  const [isAutoScratchingThis, setIsAutoScratchingThis] = useState(false);
   const isRevealedRef = useRef(isRevealed);
   isRevealedRef.current = isRevealed;
 
-  useEffect(() => {
+  const drawFoil = useCallback(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
     if (!canvas || !container) return;
@@ -33,8 +43,8 @@ const ScratchBox = forwardRef<ScratchBoxHandle, ScratchBoxProps>(function Scratc
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    const width = container.clientWidth || 98;
+    const height = container.clientHeight || 98;
     const dpr = window.devicePixelRatio || 1;
 
     canvas.width = width * dpr;
@@ -43,44 +53,57 @@ const ScratchBox = forwardRef<ScratchBoxHandle, ScratchBoxProps>(function Scratc
     canvas.style.height = `${height}px`;
 
     ctx.scale(dpr, dpr);
+    ctx.globalCompositeOperation = "source-over";
 
-    // Draw Gold Foil Gradient
+    // Rich metallic gold foil gradient
     const goldGrad = ctx.createLinearGradient(0, 0, width, height);
-    goldGrad.addColorStop(0, "#F7E396");
-    goldGrad.addColorStop(0.3, "#E5C255");
-    goldGrad.addColorStop(0.65, "#CAA035");
-    goldGrad.addColorStop(1, "#A87C1D");
+    goldGrad.addColorStop(0, "#FCEEB5");
+    goldGrad.addColorStop(0.25, "#E8C868");
+    goldGrad.addColorStop(0.55, "#D4AF37");
+    goldGrad.addColorStop(0.8, "#B8861B");
+    goldGrad.addColorStop(1, "#8A6412");
 
     ctx.fillStyle = goldGrad;
     ctx.beginPath();
     ctx.roundRect(0, 0, width, height, 16);
     ctx.fill();
 
-    // Stardust Texture Specks
-    ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-    for (let i = 0; i < 40; i++) {
+    // Subtle gold border line
+    ctx.strokeStyle = "#FFE485";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(1, 1, width - 2, height - 2, 15);
+    ctx.stroke();
+
+    // Sparkling stardust specks
+    ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
+    for (let i = 0; i < 35; i++) {
       const rx = Math.random() * width;
       const ry = Math.random() * height;
-      const rsize = Math.random() * 2 + 0.8;
+      const rsize = Math.random() * 2 + 0.6;
       ctx.beginPath();
       ctx.arc(rx, ry, rsize, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // Embossed "✦ Scratch ✦"
+    // Embossed "✦ Scratch ✦" text
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = "bold 10px 'Montserrat', sans-serif";
     ctx.letterSpacing = "1px";
 
-    ctx.fillStyle = "rgba(74, 52, 7, 0.35)";
+    ctx.fillStyle = "rgba(60, 42, 6, 0.4)";
     ctx.fillText("✦ Scratch ✦", width / 2, height / 2 + 1);
 
-    ctx.fillStyle = "#593E08";
+    ctx.fillStyle = "#543C08";
     ctx.fillText("✦ Scratch ✦", width / 2, height / 2);
   }, []);
 
-  // Expose automatic scratch animation method
+  useEffect(() => {
+    drawFoil();
+  }, [drawFoil]);
+
+  // Expose automatic scratch animation and reset methods
   useImperativeHandle(ref, () => ({
     autoScratch: () => {
       if (isRevealedRef.current) return;
@@ -95,37 +118,49 @@ const ScratchBox = forwardRef<ScratchBoxHandle, ScratchBoxProps>(function Scratc
         return;
       }
 
-      const w = containerRef.current?.clientWidth || 95;
-      const h = containerRef.current?.clientHeight || 95;
+      setIsAutoScratchingThis(true);
+
+      const w = containerRef.current?.clientWidth || 98;
+      const h = containerRef.current?.clientHeight || 98;
 
       ctx.globalCompositeOperation = "destination-out";
 
       let step = 0;
-      const totalSteps = 16;
+      const totalSteps = 22; // ~620ms of smooth visible scratching
       const timer = setInterval(() => {
         step++;
         const progress = step / totalSteps;
 
-        // Zig-zag sweeping scratch pattern across the box
-        const y = progress * (h * 0.85) + h * 0.08;
-        const xOffset = Math.sin(progress * Math.PI * 3) * (w * 0.32);
+        // Dynamic zig-zag sweeping brush stroke across the box
+        const y = progress * (h * 0.88) + h * 0.06;
+        const xOffset = Math.sin(progress * Math.PI * 4) * (w * 0.35);
         const x = w / 2 + xOffset;
 
         ctx.beginPath();
-        ctx.arc(x, y, 22, 0, Math.PI * 2);
+        ctx.arc(x, y, 24, 0, Math.PI * 2);
         ctx.fill();
 
-        // Additional center clear
+        // Extra overlapping circles to ensure clean reveal
         ctx.beginPath();
-        ctx.arc(w / 2 + (Math.random() - 0.5) * 20, h / 2 + (Math.random() - 0.5) * 20, 18, 0, Math.PI * 2);
+        ctx.arc(
+          x + (Math.random() - 0.5) * 16,
+          y + (Math.random() - 0.5) * 16,
+          20,
+          0,
+          Math.PI * 2
+        );
         ctx.fill();
 
         if (step >= totalSteps) {
           clearInterval(timer);
           ctx.clearRect(0, 0, canvas.width, canvas.height);
+          setIsAutoScratchingThis(false);
           onRevealed();
         }
-      }, 25);
+      }, 28);
+    },
+    reset: () => {
+      drawFoil();
     },
   }));
 
@@ -142,7 +177,7 @@ const ScratchBox = forwardRef<ScratchBoxHandle, ScratchBoxProps>(function Scratc
 
     ctx.globalCompositeOperation = "destination-out";
     ctx.beginPath();
-    ctx.arc(x, y, 18, 0, Math.PI * 2);
+    ctx.arc(x, y, 20, 0, Math.PI * 2);
     ctx.fill();
 
     checkProgress();
@@ -222,6 +257,13 @@ const ScratchBox = forwardRef<ScratchBoxHandle, ScratchBoxProps>(function Scratc
             isRevealed ? "opacity-0 pointer-events-none" : "opacity-100"
           }`}
         />
+
+        {/* Active Scratch Sparkle Wand Indicator while auto-scratching */}
+        {isAutoScratchingThis && (
+          <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center animate-pulse">
+            <Sparkles className="w-6 h-6 text-goldFoil drop-shadow-[0_0_8px_rgba(212,175,55,0.9)] animate-spin" />
+          </div>
+        )}
       </div>
 
       {/* Label Beneath (DAY / MONTH / YEAR) */}
@@ -232,7 +274,19 @@ const ScratchBox = forwardRef<ScratchBoxHandle, ScratchBoxProps>(function Scratc
   );
 });
 
-export default function ScratchCard() {
+export interface ScratchCardHandle {
+  triggerAutoScratch: () => void;
+  resetScratch: () => void;
+}
+
+interface ScratchCardProps {
+  isEnvelopeOpened?: boolean;
+}
+
+const ScratchCard = forwardRef<ScratchCardHandle, ScratchCardProps>(function ScratchCard(
+  { isEnvelopeOpened = false },
+  ref
+) {
   const [revealed, setRevealed] = useState({
     day: false,
     month: false,
@@ -274,58 +328,75 @@ export default function ScratchCard() {
     });
   };
 
-  // Automatically scratch boxes one by one: DAY -> MONTH -> YEAR
-  const triggerAutoScratchSequence = useCallback(() => {
+  // Automated one-by-one scratch sequence: DAY -> MONTH -> YEAR
+  const startOneByOneScratch = useCallback(() => {
     if (hasAutoScratchedRef.current) return;
     hasAutoScratchedRef.current = true;
 
     // 1. Scratch DAY (12)
     setTimeout(() => {
       dayRef.current?.autoScratch();
-    }, 400);
+    }, 300);
 
     // 2. Scratch MONTH (OCT)
     setTimeout(() => {
       monthRef.current?.autoScratch();
-    }, 1100);
+    }, 1200);
 
     // 3. Scratch YEAR (2026)
     setTimeout(() => {
       yearRef.current?.autoScratch();
-    }, 1800);
+    }, 2100);
 
-    // 4. Celebration Confetti (completely silent so only Kudmayi plays)
+    // 4. Celebration Confetti
     setTimeout(() => {
       confetti({
-        particleCount: 80,
+        particleCount: 85,
         spread: 85,
         origin: { y: 0.65 },
         colors: ["#D4AF37", "#F5E8C7", "#E8C5C8", "#FFFDF9", "#8B2635"],
         ticks: 180,
         gravity: 0.85,
       });
-    }, 2400);
+    }, 2800);
   }, []);
 
-  // Trigger automatic one-by-one scratch when the section scrolls into view
+  const resetAllScratch = useCallback(() => {
+    hasAutoScratchedRef.current = false;
+    setRevealed({ day: false, month: false, year: false });
+    dayRef.current?.reset();
+    monthRef.current?.reset();
+    yearRef.current?.reset();
+  }, []);
+
+  useImperativeHandle(ref, () => ({
+    triggerAutoScratch: () => {
+      startOneByOneScratch();
+    },
+    resetScratch: () => {
+      resetAllScratch();
+    },
+  }));
+
+  // Fallback trigger if guest scrolls manually into "The Date" (ONLY after envelope is opened)
   useEffect(() => {
-    const section = document.getElementById("date-scratch-section");
-    if (!section) return;
+    if (!isEnvelopeOpened) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !hasAutoScratchedRef.current) {
-            triggerAutoScratchSequence();
-          }
-        });
-      },
-      { threshold: 0.3 }
-    );
+    const handleScrollCheck = () => {
+      if (hasAutoScratchedRef.current) return;
+      const section = document.getElementById("date-scratch-section");
+      if (!section) return;
 
-    observer.observe(section);
-    return () => observer.disconnect();
-  }, [triggerAutoScratchSequence]);
+      const rect = section.getBoundingClientRect();
+      // Only trigger when "The Date" is clearly centered in the middle of the viewport
+      if (rect.top <= window.innerHeight * 0.45 && rect.bottom >= window.innerHeight * 0.35) {
+        startOneByOneScratch();
+      }
+    };
+
+    window.addEventListener("scroll", handleScrollCheck, { passive: true });
+    return () => window.removeEventListener("scroll", handleScrollCheck);
+  }, [isEnvelopeOpened, startOneByOneScratch]);
 
   return (
     <section
@@ -372,16 +443,34 @@ export default function ScratchCard() {
         />
       </div>
 
-      {/* Quick Tap to Reveal Option */}
-      {(!revealed.day || !revealed.month || !revealed.year) && (
-        <button
-          onClick={handleRevealAll}
-          type="button"
-          className="text-xs text-charcoal-muted hover:text-goldFoil-dark underline font-sans transition-colors mt-2"
-        >
-          Can&apos;t scratch? Tap to reveal
-        </button>
-      )}
+      {/* Quick Actions (Tap to reveal if needed / Replay scratch) */}
+      <div className="flex items-center gap-4 mt-2">
+        {(!revealed.day || !revealed.month || !revealed.year) && (
+          <button
+            onClick={handleRevealAll}
+            type="button"
+            className="text-xs text-charcoal-muted hover:text-goldFoil-dark underline font-sans transition-colors"
+          >
+            Can&apos;t scratch? Tap to reveal
+          </button>
+        )}
+
+        {(revealed.day && revealed.month && revealed.year) && (
+          <button
+            onClick={() => {
+              resetAllScratch();
+              setTimeout(() => startOneByOneScratch(), 300);
+            }}
+            type="button"
+            className="flex items-center gap-1.5 text-xs text-goldFoil-dark hover:text-charcoal-ink font-playfair font-semibold transition-colors py-1 px-3 rounded-full border border-goldFoil/30 hover:border-goldFoil/60 bg-[#FAF5F0]"
+          >
+            <RotateCcw className="w-3 h-3 text-goldFoil-dark" />
+            <span>Scratch Again</span>
+          </button>
+        )}
+      </div>
     </section>
   );
-}
+});
+
+export default ScratchCard;

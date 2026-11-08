@@ -6,17 +6,20 @@ import PetalParticles from "@/components/PetalParticles";
 import MusicController from "@/components/MusicController";
 import EnvelopeCover from "@/components/EnvelopeCover";
 import HeroPalaceCourtyard from "@/components/HeroPalaceCourtyard";
-import ScratchCard from "@/components/ScratchCard";
+import ScratchCard, { ScratchCardHandle } from "@/components/ScratchCard";
 import Timeline from "@/components/Timeline";
 import ParentsGallery from "@/components/ParentsGallery";
 import DestinationMap from "@/components/DestinationMap";
 import { ChevronUp } from "lucide-react";
 
 export default function WeddingInvitationPage() {
+  const [isEnvelopeOpened, setIsEnvelopeOpened] = useState(false);
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
   const animationFrameRef = useRef<number | null>(null);
+  const scratchCardRef = useRef<ScratchCardHandle | null>(null);
+  const hasTriggeredScratchRef = useRef(false);
 
-  // Background smooth 60fps automated scroll tour (NO BUTTON RENDERED)
+  // Background smooth 60fps automated scroll tour
   useEffect(() => {
     if (!isAutoScrolling) {
       if (animationFrameRef.current) {
@@ -28,6 +31,26 @@ export default function WeddingInvitationPage() {
 
     const scrollStep = () => {
       const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+
+      // Check if we arrived at "The Date" scratch section!
+      const scratchSection = document.getElementById("date-scratch-section");
+      if (scratchSection && !hasTriggeredScratchRef.current) {
+        const rect = scratchSection.getBoundingClientRect();
+        // Pause auto-scroll right when "The Date" is centered in the viewport
+        if (rect.top <= window.innerHeight * 0.32 && rect.top >= -30) {
+          hasTriggeredScratchRef.current = true;
+          setIsAutoScrolling(false);
+
+          // Trigger the visible one-by-one auto-scratching sequence!
+          scratchCardRef.current?.triggerAutoScratch();
+
+          // After watching the 3 boxes scratch one by one + confetti (~3.8s), resume smooth auto-scroll!
+          setTimeout(() => {
+            setIsAutoScrolling(true);
+          }, 3800);
+          return;
+        }
+      }
 
       if (window.scrollY >= maxScroll - 4) {
         setIsAutoScrolling(false);
@@ -53,7 +76,7 @@ export default function WeddingInvitationPage() {
     };
   }, [isAutoScrolling]);
 
-  // Pause auto-scroll if user touches or uses mouse wheel to explore manually
+  // Pause auto-scroll if guest touches screen or scrolls manually
   useEffect(() => {
     const handleUserInteraction = () => {
       if (isAutoScrolling) {
@@ -70,18 +93,20 @@ export default function WeddingInvitationPage() {
     };
   }, [isAutoScrolling]);
 
-  // When first page envelope opens: automatically dissolve first page & scroll down
+  // When first page envelope opens: automatically dissolve first page & start smooth tour
   const handleEnvelopeOpenComplete = useCallback(() => {
+    setIsEnvelopeOpened(true);
+
     // 1. Smoothly scroll into the Hero Palace Courtyard section
     const heroSection = document.getElementById("hero-palace-section");
     if (heroSection) {
       heroSection.scrollIntoView({ behavior: "smooth" });
     }
 
-    // 2. Automatically start smooth scrolling down tour after 1.6s
+    // 2. Automatically start smooth scrolling down tour after 2.2s so guest enjoys the couple first
     setTimeout(() => {
       setIsAutoScrolling(true);
-    }, 1600);
+    }, 2200);
   }, []);
 
   const scrollToTop = () => {
@@ -94,7 +119,7 @@ export default function WeddingInvitationPage() {
       {/* Ambient Floating Rose Petals & Golden Bokeh */}
       <PetalParticles />
 
-      {/* Floating Procedural Music Controller (Top-Right) */}
+      {/* Floating Music Controller (Top-Right) */}
       <MusicController />
 
       {/* SECTION 1: 3D Embossed Envelope & Monogram Wax Seal Cover (100vh Full Screen) */}
@@ -103,8 +128,8 @@ export default function WeddingInvitationPage() {
       {/* SECTION 2: Hero & Mughal Palace Courtyard Illustration (Full Screen Width) */}
       <HeroPalaceCourtyard />
 
-      {/* INTERACTIVE GOLD FOIL SCRATCH CARD SECTION (AUTO-SCRATCHES ONE BY ONE) */}
-      <ScratchCard />
+      {/* INTERACTIVE GOLD FOIL SCRATCH CARD SECTION (AUTO-SCRATCHES ONE BY ONE IN FRONT OF USER) */}
+      <ScratchCard ref={scratchCardRef} isEnvelopeOpened={isEnvelopeOpened} />
 
       {/* SECTION 3: Royal Timeline Itinerary (Baraat, Nikkah, Walima) */}
       <Timeline />
