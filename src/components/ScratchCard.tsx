@@ -36,6 +36,7 @@ const ScratchBox = forwardRef<ScratchBoxHandle, ScratchBoxProps>(function Scratc
   isRevealedRef.current = isRevealed;
 
   const drawFoil = useCallback(() => {
+    if (isRevealedRef.current) return;
     const canvas = canvasRef.current;
     const container = containerRef.current;
     if (!canvas || !container) return;
@@ -155,11 +156,13 @@ const ScratchBox = forwardRef<ScratchBoxHandle, ScratchBoxProps>(function Scratc
           clearInterval(timer);
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           setIsAutoScratchingThis(false);
+          isRevealedRef.current = true;
           onRevealed();
         }
       }, 28);
     },
     reset: () => {
+      isRevealedRef.current = false;
       drawFoil();
     },
   }));
@@ -260,7 +263,7 @@ const ScratchBox = forwardRef<ScratchBoxHandle, ScratchBoxProps>(function Scratc
 
         {/* Active Scratch Sparkle Wand Indicator while auto-scratching */}
         {isAutoScratchingThis && (
-          <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center animate-pulse">
+          <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center">
             <Sparkles className="w-6 h-6 text-goldFoil drop-shadow-[0_0_8px_rgba(212,175,55,0.9)] animate-spin" />
           </div>
         )}

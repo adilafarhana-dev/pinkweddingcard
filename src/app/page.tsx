@@ -15,10 +15,16 @@ import { ChevronUp } from "lucide-react";
 export default function WeddingInvitationPage() {
   const [isEnvelopeOpened, setIsEnvelopeOpened] = useState(false);
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
+  const isAutoScrollingRef = useRef(false);
+  const isEnvelopeOpenedRef = useRef(false);
+  isAutoScrollingRef.current = isAutoScrolling;
+  isEnvelopeOpenedRef.current = isEnvelopeOpened;
+
   const animationFrameRef = useRef<number | null>(null);
   const scratchCardRef = useRef<ScratchCardHandle | null>(null);
   const hasTriggeredScratchRef = useRef(false);
   const currentPosRef = useRef(0);
+  const lastTargetYRef = useRef(-1);
   const touchStartYRef = useRef<number | null>(null);
   const resumeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -34,22 +40,35 @@ export default function WeddingInvitationPage() {
     );
   }, []);
 
-  // Cross-browser mobile & desktop scroll setter (Safari iOS, Android Chrome, Desktop)
+  // Cross-browser mobile & desktop scroll setter without duplicate-frame thrashing
   const setScrollY = useCallback((y: number) => {
     const targetY = Math.round(y);
+    if (targetY === lastTargetYRef.current) return;
+    lastTargetYRef.current = targetY;
+
     window.scrollTo(0, targetY);
-    if (document.scrollingElement) {
-      document.scrollingElement.scrollTop = targetY;
-    }
-    if (document.documentElement && document.documentElement.scrollTop !== targetY) {
-      document.documentElement.scrollTop = targetY;
-    }
-    if (document.body && document.body.scrollTop !== targetY) {
-      document.body.scrollTop = targetY;
+    if (typeof window !== "undefined" && Math.abs((window.pageYOffset || 0) - targetY) > 2) {
+      if (document.scrollingElement) {
+        document.scrollingElement.scrollTop = targetY;
+      } else if (document.documentElement) {
+        document.documentElement.scrollTop = targetY;
+      }
     }
   }, []);
 
-  // Background slow, stately automated scroll tour (~36px/sec)
+  const getMaxScroll = useCallback(() => {
+    if (typeof window === "undefined") return 0;
+    const doc = document.documentElement;
+    const body = document.body;
+    return Math.max(
+      doc ? doc.scrollHeight : 0,
+      body ? body.scrollHeight : 0,
+      doc ? doc.offsetHeight : 0,
+      body ? body.offsetHeight : 0
+    ) - window.innerHeight;
+  }, []);
+
+  // Background smooth stately automated scroll tour
   useEffect(() => {
     if (!isAutoScrolling) {
       if (animationFrameRef.current) {
@@ -67,33 +86,28 @@ export default function WeddingInvitationPage() {
       const elapsed = timestamp - lastTimestamp;
       lastTimestamp = timestamp;
 
-      const doc = document.documentElement;
-      const body = document.body;
-      const scrollHeight = Math.max(
-        doc ? doc.scrollHeight : 0,
-        body ? body.scrollHeight : 0,
-        doc ? doc.offsetHeight : 0,
-        body ? body.offsetHeight : 0
-      );
-      const maxScroll = scrollHeight - window.innerHeight;
+      const maxScroll = getMaxScroll();
 
       // Check if we arrived at "The Date" scratch section!
       const scratchSection = document.getElementById("date-scratch-section");
       if (scratchSection && !hasTriggeredScratchRef.current) {
         const rect = scratchSection.getBoundingClientRect();
-        // Pause auto-scroll right when "The Date" is centered in the viewport
-        if (rect.top <= window.innerHeight * 0.35 && rect.top >= -30) {
+        // Pause auto-scroll right when "The Date" is nicely centered in the viewport
+        if (rect.top <= window.innerHeight * 0.22 && rect.top >= -50) {
           hasTriggeredScratchRef.current = true;
           setIsAutoScrolling(false);
+          isAutoScrollingRef.current = false;
 
           // Trigger the visible one-by-one auto-scratching sequence!
           scratchCardRef.current?.triggerAutoScratch();
 
-          // After watching the 3 boxes scratch one by one + confetti (~3.9s), resume slow auto-scroll!
-          setTimeout(() => {
+          // After watching the 3 boxes scratch one by one + confetti (~4.2s), resume slow auto-scroll!
+          if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+          resumeTimerRef.current = setTimeout(() => {
             currentPosRef.current = getScrollY();
             setIsAutoScrolling(true);
-          }, 3900);
+            isAutoScrollingRef.current = true;
+          }, 4200);
           return;
         }
       }
@@ -101,6 +115,7 @@ export default function WeddingInvitationPage() {
       const currentActual = getScrollY();
       if (currentActual >= maxScroll - 6 || currentPosRef.current >= maxScroll - 6) {
         setIsAutoScrolling(false);
+        isAutoScrollingRef.current = false;
         if (animationFrameRef.current) {
           cancelAnimationFrame(animationFrameRef.current);
           animationFrameRef.current = null;
@@ -108,9 +123,9 @@ export default function WeddingInvitationPage() {
         return;
       }
 
-      // Ultra-slow, graceful royal gliding pace (~36px/sec across 60Hz/120Hz screens)
+      // Stately royal glide pace (~38px/sec)
       const safeDelta = Math.min(elapsed, 40);
-      const deltaPx = (36 * safeDelta) / 1000;
+      const deltaPx = (38 * safeDelta) / 1000;
 
       // Resync accumulator if user manually shifted or if drift occurred
       if (Math.abs(currentActual - currentPosRef.current) > 40) {
@@ -131,31 +146,30 @@ export default function WeddingInvitationPage() {
         animationFrameRef.current = null;
       }
     };
-  }, [isAutoScrolling, getScrollY, setScrollY]);
+  }, [isAutoScrolling, getScrollY, setScrollY, getMaxScroll]);
 
-  // Pause temporarily when user interacts, then resume slow auto-scroll after idle
+  // Pause temporarily when user interacts, then reliably resume slow auto-scroll after idle
+  // Mounted once so the resume timer is NEVER prematurely cleared by state re-renders
   useEffect(() => {
     const pauseAndResume = () => {
-      setIsAutoScrolling(false);
+      if (isAutoScrollingRef.current) {
+        setIsAutoScrolling(false);
+        isAutoScrollingRef.current = false;
+      }
+
       if (resumeTimerRef.current) {
         clearTimeout(resumeTimerRef.current);
       }
+
       // Resume slow automatic downward glide after 3.2s of user idle
       resumeTimerRef.current = setTimeout(() => {
-        if (!isEnvelopeOpened) return;
+        if (!isEnvelopeOpenedRef.current) return;
         const currentActual = getScrollY();
-        const doc = document.documentElement;
-        const body = document.body;
-        const scrollHeight = Math.max(
-          doc ? doc.scrollHeight : 0,
-          body ? body.scrollHeight : 0,
-          doc ? doc.offsetHeight : 0,
-          body ? body.offsetHeight : 0
-        );
-        const maxScroll = scrollHeight - window.innerHeight;
+        const maxScroll = getMaxScroll();
         if (currentActual < maxScroll - 15) {
           currentPosRef.current = currentActual;
           setIsAutoScrolling(true);
+          isAutoScrollingRef.current = true;
         }
       }, 3200);
     };
@@ -201,11 +215,12 @@ export default function WeddingInvitationPage() {
         clearTimeout(resumeTimerRef.current);
       }
     };
-  }, [isAutoScrolling, isEnvelopeOpened, getScrollY]);
+  }, [getScrollY, getMaxScroll]);
 
   // When first page envelope opens: automatically dissolve first page & start smooth tour
   const handleEnvelopeOpenComplete = useCallback(() => {
     setIsEnvelopeOpened(true);
+    isEnvelopeOpenedRef.current = true;
 
     // Ensure we start cleanly at top
     setScrollY(0);
@@ -215,11 +230,14 @@ export default function WeddingInvitationPage() {
     setTimeout(() => {
       currentPosRef.current = getScrollY();
       setIsAutoScrolling(true);
+      isAutoScrollingRef.current = true;
     }, 1500);
   }, [getScrollY, setScrollY]);
 
   const scrollToTop = () => {
     setIsAutoScrolling(false);
+    isAutoScrollingRef.current = false;
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
