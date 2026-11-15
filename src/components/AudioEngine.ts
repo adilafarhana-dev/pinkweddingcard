@@ -1,5 +1,5 @@
 // Pure Audio Engine for Royal Digital Wedding Invitation
-// Dedicated solely to playing "Kudmayi Reprise (Female)" without any extra sounds, chimes, or synth
+// Dedicated solely to playing "Walk of the Bride - Sita Kalyana Vaibhogame" without any extra sounds, chimes, or synth
 
 type AudioStateListener = (isPlaying: boolean) => void;
 
@@ -17,7 +17,7 @@ class AudioEngine {
   private initAudioElement() {
     if (this.audio) return;
     try {
-      this.audio = new Audio("/kudmayi.m4a");
+      this.audio = new Audio("/walk-of-the-bride.m4a");
       this.audio.loop = true;
       this.audio.preload = "auto";
       this.audio.volume = 0.85;
@@ -25,7 +25,7 @@ class AudioEngine {
       // Fallback to mp3 if m4a format isn't supported by browser
       this.audio.onerror = () => {
         if (this.audio && this.audio.src.endsWith(".m4a")) {
-          this.audio.src = "/kudmayi.mp3";
+          this.audio.src = "/walk-of-the-bride.mp3";
           this.audio.load();
         }
       };
