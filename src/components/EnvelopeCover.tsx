@@ -18,13 +18,16 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
   useEffect(() => {
     if (!isDissolved) {
       document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
       window.scrollTo(0, 0);
     } else {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
     }
 
     return () => {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
     };
   }, [isDissolved]);
 
@@ -55,7 +58,8 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
     // Flaps unfold slowly (2.5s), then automatically dissolve and remove first page
     setTimeout(() => {
       setIsDissolved(true);
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
       if (onOpenComplete) {
         onOpenComplete();
       }
@@ -66,6 +70,7 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
     setIsDissolved(false);
     setIsOpen(false);
     document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
