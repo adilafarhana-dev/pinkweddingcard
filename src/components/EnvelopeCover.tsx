@@ -31,6 +31,17 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
     };
   }, [isDissolved]);
 
+  // Automatically open this page slowly after 1.5s so guest sees the closed monogram seal first
+  useEffect(() => {
+    if (isOpen || isDissolved) return;
+
+    const autoOpenTimer = setTimeout(() => {
+      handleOpenEnvelope();
+    }, 1500);
+
+    return () => clearTimeout(autoOpenTimer);
+  }, [isOpen, isDissolved]);
+
   const handleOpenEnvelope = (clientX?: number, clientY?: number) => {
     if (isOpen) return;
 
@@ -44,18 +55,18 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
     const y = clientY ? clientY / window.innerHeight : 0.5;
 
     confetti({
-      particleCount: 45,
+      particleCount: 50,
       spread: 75,
       origin: { x, y },
       colors: ["#FFEAA7", "#D4AF37", "#F5E8C7", "#FFFDF9", "#E8C5C8"],
-      ticks: 160,
-      gravity: 0.6,
-      scalar: 0.9,
+      ticks: 180,
+      gravity: 0.55,
+      scalar: 0.95,
     });
 
     setIsOpen(true);
 
-    // Flaps unfold slowly (2.5s), then automatically dissolve and remove first page
+    // Flaps unfold very slowly and majestically (3.2s), then automatically dissolve
     setTimeout(() => {
       setIsDissolved(true);
       document.body.style.overflow = "";
@@ -63,7 +74,7 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
       if (onOpenComplete) {
         onOpenComplete();
       }
-    }, 2600);
+    }, 3300);
   };
 
   const handleResetEnvelope = () => {
@@ -94,7 +105,7 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
         <motion.div
           initial={{ opacity: 1 }}
           animate={{ opacity: isOpen ? 0 : 1 }}
-          transition={{ duration: 1.0, delay: 2.1, ease: "easeInOut" }}
+          transition={{ duration: 1.2, delay: 2.8, ease: "easeInOut" }}
           className={`fixed inset-0 z-50 flex items-center justify-center bg-[#FFFDF9] overflow-hidden select-none [perspective:1400px] ${
             isOpen ? "pointer-events-none" : ""
           }`}
@@ -124,7 +135,7 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
                 rotateX: isOpen ? 180 : 0,
               }}
               transition={{
-                duration: 2.5,
+                duration: 3.2,
                 ease: [0.25, 0.1, 0.25, 1],
               }}
               style={{ transformOrigin: "top center", backfaceVisibility: "hidden" }}
@@ -164,7 +175,7 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
                 rotateX: isOpen ? -180 : 0,
               }}
               transition={{
-                duration: 2.5,
+                duration: 3.2,
                 ease: [0.25, 0.1, 0.25, 1],
               }}
               style={{ transformOrigin: "bottom center", backfaceVisibility: "hidden" }}
@@ -203,7 +214,7 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
                 rotateY: isOpen ? -180 : 0,
               }}
               transition={{
-                duration: 2.5,
+                duration: 3.2,
                 ease: [0.25, 0.1, 0.25, 1],
               }}
               style={{ transformOrigin: "left center", backfaceVisibility: "hidden" }}
@@ -231,7 +242,7 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
                 rotateY: isOpen ? 180 : 0,
               }}
               transition={{
-                duration: 2.5,
+                duration: 3.2,
                 ease: [0.25, 0.1, 0.25, 1],
               }}
               style={{ transformOrigin: "right center", backfaceVisibility: "hidden" }}
@@ -262,6 +273,9 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
                       const rect = e.currentTarget.getBoundingClientRect();
                       handleOpenEnvelope(rect.left + rect.width / 2, rect.top + rect.height / 2);
                     }}
+                    initial={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 1.2, opacity: 0 }}
+                    transition={{ duration: 1.4, ease: "easeOut" }}
                     whileHover={{ scale: 1.06 }}
                     whileTap={{ scale: 0.95 }}
                     className="pointer-events-auto relative w-24 h-24 sm:w-28 sm:h-28 rounded-full flex items-center justify-center cursor-pointer transition-transform focus:outline-none"
@@ -280,7 +294,7 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
                     </div>
 
                     <div className="absolute -bottom-1 right-1 text-[#D4AF37] pointer-events-none">
-                      <Sparkles className="w-4 h-4 text-[#D4AF37] animate-pulse" />
+                      <Sparkles className="w-4 h-4 text-[#D4AF37]" />
                     </div>
                   </motion.button>
                 )}
