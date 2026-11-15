@@ -20,6 +20,7 @@ export default function WeddingInvitationPage() {
   const hasTriggeredScratchRef = useRef(false);
   const currentPosRef = useRef(0);
   const touchStartYRef = useRef<number | null>(null);
+  const resumeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Cross-browser mobile & desktop scroll getter
   const getScrollY = useCallback(() => {
@@ -48,7 +49,7 @@ export default function WeddingInvitationPage() {
     }
   }, []);
 
-  // Background smooth automated scroll tour optimized for mobile & desktop
+  // Background slow, stately automated scroll tour (~36px/sec)
   useEffect(() => {
     if (!isAutoScrolling) {
       if (animationFrameRef.current) {
@@ -88,11 +89,11 @@ export default function WeddingInvitationPage() {
           // Trigger the visible one-by-one auto-scratching sequence!
           scratchCardRef.current?.triggerAutoScratch();
 
-          // After watching the 3 boxes scratch one by one + confetti (~3.8s), resume smooth auto-scroll!
+          // After watching the 3 boxes scratch one by one + confetti (~3.9s), resume slow auto-scroll!
           setTimeout(() => {
             currentPosRef.current = getScrollY();
             setIsAutoScrolling(true);
-          }, 3800);
+          }, 3900);
           return;
         }
       }
@@ -107,9 +108,9 @@ export default function WeddingInvitationPage() {
         return;
       }
 
-      // Time-delta normalized smooth speed (~75px/sec) across 60Hz, 90Hz, 120Hz mobile screens
+      // Ultra-slow, graceful royal gliding pace (~36px/sec across 60Hz/120Hz screens)
       const safeDelta = Math.min(elapsed, 40);
-      const deltaPx = (75 * safeDelta) / 1000;
+      const deltaPx = (36 * safeDelta) / 1000;
 
       // Resync accumulator if user manually shifted or if drift occurred
       if (Math.abs(currentActual - currentPosRef.current) > 40) {
@@ -132,13 +133,36 @@ export default function WeddingInvitationPage() {
     };
   }, [isAutoScrolling, getScrollY, setScrollY]);
 
-  // Pause auto-scroll ONLY when user deliberately drags/swipes or wheels manually
+  // Pause temporarily when user interacts, then resume slow auto-scroll after idle
   useEffect(() => {
-    if (!isAutoScrolling) return;
+    const pauseAndResume = () => {
+      setIsAutoScrolling(false);
+      if (resumeTimerRef.current) {
+        clearTimeout(resumeTimerRef.current);
+      }
+      // Resume slow automatic downward glide after 3.2s of user idle
+      resumeTimerRef.current = setTimeout(() => {
+        if (!isEnvelopeOpened) return;
+        const currentActual = getScrollY();
+        const doc = document.documentElement;
+        const body = document.body;
+        const scrollHeight = Math.max(
+          doc ? doc.scrollHeight : 0,
+          body ? body.scrollHeight : 0,
+          doc ? doc.offsetHeight : 0,
+          body ? body.offsetHeight : 0
+        );
+        const maxScroll = scrollHeight - window.innerHeight;
+        if (currentActual < maxScroll - 15) {
+          currentPosRef.current = currentActual;
+          setIsAutoScrolling(true);
+        }
+      }, 3200);
+    };
 
     const handleWheel = (e: WheelEvent) => {
       if (Math.abs(e.deltaY) > 5) {
-        setIsAutoScrolling(false);
+        pauseAndResume();
       }
     };
 
@@ -151,9 +175,9 @@ export default function WeddingInvitationPage() {
     const handleTouchMove = (e: TouchEvent) => {
       if (touchStartYRef.current !== null && e.touches.length > 0) {
         const delta = Math.abs(e.touches[0].clientY - touchStartYRef.current);
-        // Only cancel if guest actively drags/swipes more than 25px
+        // Only pause if guest actively drags/swipes more than 25px
         if (delta > 25) {
-          setIsAutoScrolling(false);
+          pauseAndResume();
           touchStartYRef.current = null;
         }
       }
@@ -173,8 +197,11 @@ export default function WeddingInvitationPage() {
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", handleTouchEnd);
+      if (resumeTimerRef.current) {
+        clearTimeout(resumeTimerRef.current);
+      }
     };
-  }, [isAutoScrolling]);
+  }, [isAutoScrolling, isEnvelopeOpened, getScrollY]);
 
   // When first page envelope opens: automatically dissolve first page & start smooth tour
   const handleEnvelopeOpenComplete = useCallback(() => {
@@ -184,11 +211,11 @@ export default function WeddingInvitationPage() {
     setScrollY(0);
     currentPosRef.current = 0;
 
-    // Automatically start smooth scrolling down tour after 2.2s so guest enjoys the couple first
+    // After 1.5s so guest sees the opening couple pose, start slowly moving down automatically
     setTimeout(() => {
       currentPosRef.current = getScrollY();
       setIsAutoScrolling(true);
-    }, 2200);
+    }, 1500);
   }, [getScrollY, setScrollY]);
 
   const scrollToTop = () => {
