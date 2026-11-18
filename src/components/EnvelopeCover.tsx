@@ -11,7 +11,6 @@ interface EnvelopeCoverProps {
 }
 
 export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
-  const [isStickerRemoved, setIsStickerRemoved] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isDissolved, setIsDissolved] = useState(false);
 
@@ -32,22 +31,19 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
     };
   }, [isDissolved]);
 
-  // Automatically open this page slowly after 1.5s so guest sees the closed floral badge first
+  // Automatically open this page slowly after 1.8s so guest sees the closed monogram seal first
   useEffect(() => {
-    if (isStickerRemoved || isOpen || isDissolved) return;
+    if (isOpen || isDissolved) return;
 
     const autoOpenTimer = setTimeout(() => {
       handleOpenEnvelope();
-    }, 1500);
+    }, 1800);
 
     return () => clearTimeout(autoOpenTimer);
-  }, [isStickerRemoved, isOpen, isDissolved]);
+  }, [isOpen, isDissolved]);
 
   const handleOpenEnvelope = (clientX?: number, clientY?: number) => {
-    if (isStickerRemoved || isOpen) return;
-
-    // 1. Slowly lift and remove the central floral sticker badge
-    setIsStickerRemoved(true);
+    if (isOpen) return;
 
     // Start "A Thousand Years (feat. Kyson Facer)" background music
     if (!audioEngine.getIsPlaying()) {
@@ -56,24 +52,23 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
 
     // Soft golden particle sparkle at seal center
     const x = clientX ? clientX / window.innerWidth : 0.5;
-    const y = clientY ? clientY / window.innerHeight : 0.454;
+    const y = clientY ? clientY / window.innerHeight : 0.5;
 
     confetti({
       particleCount: 50,
       spread: 75,
       origin: { x, y },
-      colors: ["#FFEAA7", "#D4AF37", "#F5E8C7", "#FFFDF9", "#E8C5C8", "#B4556C"],
+      colors: ["#FFEAA7", "#D4AF37", "#F5E8C7", "#FFFDF9", "#E8C5C8"],
       ticks: 180,
       gravity: 0.55,
       scalar: 0.95,
     });
 
-    // 2. As the sticker lifts, seamlessly unfold the left and right pleated flaps in 3D
-    setTimeout(() => {
-      setIsOpen(true);
-    }, 350);
+    setIsOpen(true);
 
-    // 3. Flaps unfold slowly (2.8s), then automatically dissolve and reveal the courtyard
+    // Each leaf/flap unfolds slowly in sequence:
+    // Top leaf (0.3s) -> Bottom leaf (0.8s) -> Left leaf (1.3s) -> Right leaf (1.6s)
+    // After all 4 leaves unfold majestically (4.2s), dissolve into the courtyard tour
     setTimeout(() => {
       setIsDissolved(true);
       document.body.style.overflow = "";
@@ -81,13 +76,12 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
       if (onOpenComplete) {
         onOpenComplete();
       }
-    }, 3200);
+    }, 4200);
   };
 
   const handleResetEnvelope = () => {
     setIsDissolved(false);
     setIsOpen(false);
-    setIsStickerRemoved(false);
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -108,21 +102,21 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
         </button>
       )}
 
-      {/* LUXURY PLEATED PINK ENVELOPE (MATCHING USER REFERENCE DESIGN) */}
+      {/* 4-FLAP 3D ENVELOPE TRUE FULL-SCREEN CONTAINER (EDGE-TO-EDGE ON ALL MOBILES & SCREENS) */}
       {!isDissolved && (
         <motion.div
           initial={{ opacity: 1 }}
           animate={{ opacity: isOpen ? 0 : 1 }}
-          transition={{ duration: 1.1, delay: 2.5, ease: "easeInOut" }}
-          className={`fixed inset-0 z-50 flex items-center justify-center bg-[#F8EBE8] overflow-hidden select-none [perspective:1400px] ${
+          transition={{ duration: 1.2, delay: 3.4, ease: "easeInOut" }}
+          className={`fixed inset-0 z-50 flex items-center justify-center bg-[#FFFDF9] overflow-hidden select-none [perspective:1400px] ${
             isOpen ? "pointer-events-none" : ""
           }`}
         >
-          {/* Main Envelope Frame - Centered luxury proportion container */}
-          <div className="relative w-full max-w-lg h-[100dvh] bg-[#F8EBE8] overflow-hidden [transform-style:preserve-3d] flex items-center justify-center shadow-2xl">
+          {/* Main Envelope Frame - True full-screen 100dvh without artificial gutters */}
+          <div className="relative w-full h-[100dvh] bg-[#FFFDF9] overflow-hidden [transform-style:preserve-3d]">
             
-            {/* Inner Envelope Lining Peeking Behind Flaps as they Open */}
-            <div className="absolute inset-0 bg-[#FFFDF9] flex flex-col items-center justify-center p-6 text-center z-0">
+            {/* Inner Envelope Lining Peeking Behind Flaps */}
+            <div className="absolute inset-0 bg-[#FFFDF9] flex flex-col items-center justify-center p-6 text-center">
               <span className="font-script text-3xl sm:text-4xl text-goldFoil-dark mb-1">
                 The Wedding of
               </span>
@@ -135,111 +129,186 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
             </div>
 
             {/* ========================================================================= */}
-            {/* 1. LEFT PLEATED FLAP (UNFOLDS OUTWARD SLOWLY: rotateY(-110deg))           */}
+            {/* 1. TOP TRIANGULAR LEAF (FOLDS UPWARD SLOWLY FIRST: rotateX(180deg))       */}
             {/* ========================================================================= */}
             <motion.div
               initial={false}
               animate={{
-                rotateY: isOpen ? -115 : 0,
+                rotateX: isOpen ? 180 : 0,
               }}
               transition={{
-                duration: 2.8,
+                delay: 0.3,
+                duration: 2.2,
+                ease: [0.25, 0.1, 0.25, 1],
+              }}
+              style={{ transformOrigin: "top center", backfaceVisibility: "hidden" }}
+              className="absolute inset-x-0 top-0 h-1/2 z-25 [clip-path:polygon(0_0,100%_0,50%_100%)] bg-gradient-to-b from-[#FFFDF9] via-[#FAF3ED] to-[#F5ECE6] shadow-[0_8px_20px_rgba(184,107,114,0.12)] flex items-start justify-center pt-8 sm:pt-12 overflow-hidden [transform-style:preserve-3d]"
+            >
+              {/* Starburst / Sunburst Embossed Carving */}
+              <svg viewBox="0 0 240 200" className="w-44 sm:w-56 h-auto text-[#E8DDD6]" fill="none">
+                <g stroke="#E8DDD6" strokeWidth="1.5" strokeLinecap="round">
+                  <path d="M120 70 Q110 80, 120 90 Q130 80, 120 70 Z" fill="#FBF5F0" />
+                  <path d="M120 90 Q110 100, 120 110 Q130 100, 120 90 Z" fill="#FBF5F0" />
+                  <path d="M110 80 Q100 90, 110 100 Q120 90, 110 80 Z" fill="#FBF5F0" />
+                  <path d="M130 80 Q140 90, 130 100 Q120 90, 130 80 Z" fill="#FBF5F0" />
+
+                  <line x1="120" y1="65" x2="120" y2="25" strokeWidth="2" strokeDasharray="30 0" />
+                  <circle cx="120" cy="22" r="2.5" fill="#E8DDD6" />
+                  <line x1="120" y1="115" x2="120" y2="155" strokeWidth="2" />
+
+                  <line x1="105" y1="75" x2="70" y2="45" />
+                  <circle cx="67" cy="43" r="2" fill="#E8DDD6" />
+                  <path d="M100 85 Q75 80, 60 90" strokeDasharray="40 0" />
+                  <circle cx="58" cy="90" r="2" fill="#E8DDD6" />
+
+                  <line x1="135" y1="75" x2="170" y2="45" />
+                  <circle cx="173" cy="43" r="2" fill="#E8DDD6" />
+                  <path d="M140 85 Q165 80, 180 90" strokeDasharray="40 0" />
+                  <circle cx="182" cy="90" r="2" fill="#E8DDD6" />
+                </g>
+              </svg>
+            </motion.div>
+
+            {/* ========================================================================= */}
+            {/* 2. BOTTOM TRIANGULAR LEAF (FOLDS DOWNWARD SLOWLY SECOND: rotateX(-180deg)) */}
+            {/* ========================================================================= */}
+            <motion.div
+              initial={false}
+              animate={{
+                rotateX: isOpen ? -180 : 0,
+              }}
+              transition={{
+                delay: 0.8,
+                duration: 2.2,
+                ease: [0.25, 0.1, 0.25, 1],
+              }}
+              style={{ transformOrigin: "bottom center", backfaceVisibility: "hidden" }}
+              className="absolute inset-x-0 bottom-0 h-1/2 z-24 [clip-path:polygon(0_100%,100%_100%,50%_0)] bg-gradient-to-t from-[#FFFDF9] via-[#FAF3ED] to-[#F5ECE6] shadow-[0_-8px_20px_rgba(184,107,114,0.1)] flex items-end justify-center pb-12 sm:pb-16 overflow-hidden [transform-style:preserve-3d]"
+            >
+              <svg viewBox="0 0 240 200" className="w-44 sm:w-56 h-auto text-[#E8DDD6] transform rotate-180" fill="none">
+                <g stroke="#E8DDD6" strokeWidth="1.5" strokeLinecap="round">
+                  <path d="M120 70 Q110 80, 120 90 Q130 80, 120 70 Z" fill="#FBF5F0" />
+                  <path d="M120 90 Q110 100, 120 110 Q130 100, 120 90 Z" fill="#FBF5F0" />
+                  <path d="M110 80 Q100 90, 110 100 Q120 90, 110 80 Z" fill="#FBF5F0" />
+                  <path d="M130 80 Q140 90, 130 100 Q120 90, 130 80 Z" fill="#FBF5F0" />
+
+                  <line x1="120" y1="65" x2="120" y2="25" strokeWidth="2" />
+                  <circle cx="120" cy="22" r="2.5" fill="#E8DDD6" />
+                  <line x1="120" y1="115" x2="120" y2="155" strokeWidth="2" />
+
+                  <line x1="105" y1="75" x2="70" y2="45" />
+                  <circle cx="67" cy="43" r="2" fill="#E8DDD6" />
+                  <path d="M100 85 Q75 80, 60 90" strokeDasharray="40 0" />
+                  <circle cx="58" cy="90" r="2" fill="#E8DDD6" />
+
+                  <line x1="135" y1="75" x2="170" y2="45" />
+                  <circle cx="173" cy="43" r="2" fill="#E8DDD6" />
+                  <path d="M140 85 Q165 80, 180 90" strokeDasharray="40 0" />
+                  <circle cx="182" cy="90" r="2" fill="#E8DDD6" />
+                </g>
+              </svg>
+            </motion.div>
+
+            {/* ========================================================================= */}
+            {/* 3. LEFT TRIANGULAR LEAF (FOLDS OUTWARD SLOWLY THIRD: rotateY(-180deg))    */}
+            {/* ========================================================================= */}
+            <motion.div
+              initial={false}
+              animate={{
+                rotateY: isOpen ? -180 : 0,
+              }}
+              transition={{
+                delay: 1.3,
+                duration: 2.2,
                 ease: [0.25, 0.1, 0.25, 1],
               }}
               style={{ transformOrigin: "left center", backfaceVisibility: "hidden" }}
-              className="absolute inset-y-0 left-0 w-1/2 z-20 overflow-hidden shadow-[8px_0_25px_rgba(180,85,108,0.25)] [transform-style:preserve-3d]"
+              className="absolute inset-y-0 left-0 w-1/2 z-22 [clip-path:polygon(0_0,0_100%,100%_50%)] bg-gradient-to-r from-[#FAF2EC] via-[#F6ECE6] to-[#EEDBD5] shadow-[6px_0_15px_rgba(184,107,114,0.08)] flex items-center justify-start pl-4 sm:pl-8 overflow-hidden [transform-style:preserve-3d]"
             >
-              {/* Left Pleated Image Flap (Covers exactly the left half) */}
-              <div className="relative w-full h-full">
-                <img
-                  src="/pink-envelope-left.png"
-                  alt="Pink Pleated Envelope Left Flap"
-                  className="w-full h-full object-cover object-right select-none pointer-events-none"
-                />
-                {/* Subtle Inner Paper Shadow Edge along the center seam */}
-                <div className="absolute inset-y-0 right-0 w-3 bg-gradient-to-l from-black/15 to-transparent pointer-events-none" />
-              </div>
+              <svg viewBox="0 0 100 300" className="w-14 sm:w-16 h-auto" fill="none">
+                <path d="M30 40 Q45 150, 35 260" stroke="#DFCFCA" strokeWidth="1.2" />
+                <ellipse cx="28" cy="80" rx="4" ry="7" fill="#E6D3CE" />
+                <circle cx="36" cy="78" r="2" fill="#D4AF37" />
+                <ellipse cx="40" cy="130" rx="4" ry="7" fill="#E6D3CE" />
+                <circle cx="48" cy="128" r="2" fill="#D4AF37" />
+                <ellipse cx="32" cy="180" rx="4" ry="7" fill="#E6D3CE" />
+                <circle cx="25" cy="182" r="2" fill="#D4AF37" />
+                <ellipse cx="40" cy="230" rx="4" ry="7" fill="#E6D3CE" />
+                <circle cx="47" cy="228" r="2" fill="#D4AF37" />
+              </svg>
             </motion.div>
 
             {/* ========================================================================= */}
-            {/* 2. RIGHT PLEATED FLAP (UNFOLDS OUTWARD SLOWLY: rotateY(110deg))           */}
+            {/* 4. RIGHT TRIANGULAR LEAF (FOLDS OUTWARD SLOWLY FOURTH: rotateY(180deg))   */}
             {/* ========================================================================= */}
             <motion.div
               initial={false}
               animate={{
-                rotateY: isOpen ? 115 : 0,
+                rotateY: isOpen ? 180 : 0,
               }}
               transition={{
-                duration: 2.8,
+                delay: 1.6,
+                duration: 2.2,
                 ease: [0.25, 0.1, 0.25, 1],
               }}
               style={{ transformOrigin: "right center", backfaceVisibility: "hidden" }}
-              className="absolute inset-y-0 right-0 w-1/2 z-20 overflow-hidden shadow-[-8px_0_25px_rgba(180,85,108,0.25)] [transform-style:preserve-3d]"
+              className="absolute inset-y-0 right-0 w-1/2 z-21 [clip-path:polygon(100%_0,100%_100%,0_50%)] bg-gradient-to-l from-[#FAF2EC] via-[#F6ECE6] to-[#EEDBD5] shadow-[-6px_0_15px_rgba(184,107,114,0.08)] flex items-center justify-end pr-4 sm:pr-8 overflow-hidden [transform-style:preserve-3d]"
             >
-              {/* Right Pleated Image Flap (Covers exactly the right half) */}
-              <div className="relative w-full h-full">
-                <img
-                  src="/pink-envelope-right.png"
-                  alt="Pink Pleated Envelope Right Flap"
-                  className="w-full h-full object-cover object-left select-none pointer-events-none"
-                />
-                {/* Subtle Inner Paper Shadow Edge along the center seam */}
-                <div className="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/15 to-transparent pointer-events-none" />
-              </div>
+              <svg viewBox="0 0 100 300" className="w-14 sm:w-16 h-auto transform scale-x-[-1]" fill="none">
+                <path d="M30 40 Q45 150, 35 260" stroke="#DFCFCA" strokeWidth="1.2" />
+                <ellipse cx="28" cy="80" rx="4" ry="7" fill="#E6D3CE" />
+                <circle cx="36" cy="78" r="2" fill="#D4AF37" />
+                <ellipse cx="40" cy="130" rx="4" ry="7" fill="#E6D3CE" />
+                <circle cx="48" cy="128" r="2" fill="#D4AF37" />
+                <ellipse cx="32" cy="180" rx="4" ry="7" fill="#E6D3CE" />
+                <circle cx="25" cy="182" r="2" fill="#D4AF37" />
+                <ellipse cx="40" cy="230" rx="4" ry="7" fill="#E6D3CE" />
+                <circle cx="47" cy="228" r="2" fill="#D4AF37" />
+              </svg>
             </motion.div>
 
             {/* ========================================================================= */}
-            {/* 3. CENTRAL FLORAL STICKER BADGE (LOCKED TO EXACT CENTER SEAM, COVERS BLUR) */}
+            {/* CENTER WAX SEAL MONOGRAM "D&A"                                            */}
             {/* ========================================================================= */}
-            {/* Static wrapper div: Locked at exact (X: 50%, Y: 45.41%) center of the pleats */}
-            <div
-              style={{ top: "45.41%", left: "50%" }}
-              className="absolute -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none flex items-center justify-center"
-            >
+            <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
               <AnimatePresence>
-                {!isStickerRemoved && (
+                {!isOpen && (
                   <motion.button
                     type="button"
                     onClick={(e) => {
                       const rect = e.currentTarget.getBoundingClientRect();
                       handleOpenEnvelope(rect.left + rect.width / 2, rect.top + rect.height / 2);
                     }}
-                    initial={{ scale: 1, opacity: 1, rotate: 0 }}
-                    exit={{
-                      scale: 1.25,
-                      opacity: 0,
-                      rotate: 6,
-                      filter: "blur(2px)",
-                      transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] },
-                    }}
-                    whileHover={{ scale: 1.05 }}
+                    initial={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 1.25, opacity: 0 }}
+                    transition={{ duration: 1.2, ease: "easeOut" }}
+                    whileHover={{ scale: 1.06 }}
                     whileTap={{ scale: 0.95 }}
-                    className="pointer-events-auto relative w-[min(46vw,22vh)] h-[min(46vw,22vh)] min-w-[165px] min-h-[165px] max-w-[215px] max-h-[215px] rounded-full flex items-center justify-center cursor-pointer transition-transform focus:outline-none"
-                    aria-label="Tap Floral Sticker to Open Wedding Invitation"
+                    className="pointer-events-auto relative w-24 h-24 sm:w-28 sm:h-28 rounded-full flex items-center justify-center cursor-pointer transition-transform focus:outline-none"
+                    aria-label="Tap D&A Wax Seal to Open Invitation"
                   >
-                    {/* Ambient Glow */}
-                    <div className="absolute -inset-2 rounded-full bg-[radial-gradient(circle,#E8A3B4_0%,#B4556C_40%,transparent_70%)] opacity-35 blur-md pointer-events-none" />
+                    <div className="absolute -inset-4 rounded-full bg-[radial-gradient(circle,#EAC775_0%,#D4AF37_35%,transparent_70%)] opacity-45 blur-md pointer-events-none" />
 
-                    {/* Exact Floral Sticker Image - Perfectly centered and covers the rosette fold */}
-                    <img
-                      src="/pink-envelope-seal.png"
-                      alt="Embossed Floral Sticker Badge"
-                      className="w-full h-full object-contain drop-shadow-[0_12px_28px_rgba(140,50,75,0.45)] select-none pointer-events-none"
-                    />
+                    <div className="relative w-full h-full rounded-full bg-gradient-to-b from-[#FFFDF9] via-[#FAF4E8] to-[#EADBBE] shadow-[0_8px_25px_rgba(180,140,40,0.35),inset_0_2px_4px_rgba(255,255,255,0.9),inset_0_-3px_6px_rgba(140,105,35,0.2)] flex items-center justify-center p-2.5">
+                      <div className="w-full h-full rounded-full border border-[#D4AF37] shadow-[inset_0_1px_3px_rgba(212,175,55,0.5)] flex items-center justify-center p-1">
+                        <div className="w-full h-full rounded-full border border-[#D4AF37]/50 flex items-center justify-center">
+                          <span className="font-script text-3xl sm:text-4xl text-[#B8861B] font-normal tracking-wide drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] -mt-0.5">
+                            D &amp; A
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
-                    {/* Fairy Sparkle Glint */}
-                    <div className="absolute bottom-1 right-2 text-goldFoil pointer-events-none">
-                      <Sparkles className="w-4 h-4 text-[#FFF2C2] drop-shadow-[0_0_6px_rgba(212,175,55,0.8)]" />
+                    <div className="absolute -bottom-1 right-1 text-[#D4AF37] pointer-events-none">
+                      <Sparkles className="w-4 h-4 text-[#D4AF37]" />
                     </div>
                   </motion.button>
                 )}
               </AnimatePresence>
-            </div>
 
-            {/* Bottom Clickable Pill Button: "TAP SEAL TO OPEN" */}
-            <div className="absolute bottom-10 sm:bottom-14 inset-x-0 flex justify-center pointer-events-none z-30">
+              {/* Bottom Clickable Pill Button: "TAP SEAL TO OPEN" */}
               <AnimatePresence>
-                {!isStickerRemoved && (
+                {!isOpen && (
                   <motion.button
                     type="button"
                     onClick={(e) => {
@@ -250,11 +319,11 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ delay: 0.3 }}
-                    className="pointer-events-auto flex items-center gap-2 px-4 py-2 rounded-full bg-[#FFFDF9]/95 hover:bg-[#FFFDF9] border border-[#E8C5CE] shadow-lg backdrop-blur-md cursor-pointer transition-all active:scale-95"
+                    className="pointer-events-auto absolute bottom-12 sm:bottom-16 flex items-center gap-2 px-4 py-2 rounded-full bg-[#FFFDF9]/95 hover:bg-[#FFFDF9] border border-[#EADBBE] shadow-md hover:shadow-lg backdrop-blur-sm cursor-pointer transition-all active:scale-95"
                   >
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#B4556C] animate-ping" />
-                    <span className="font-playfair text-[11px] tracking-[0.22em] text-[#6B1724] font-semibold uppercase">
-                      {isStickerRemoved ? "UNSEALING..." : "TAP SEAL TO OPEN"}
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#E5C158] animate-ping" />
+                    <span className="font-playfair text-[11px] tracking-[0.22em] text-charcoal-ink font-semibold uppercase">
+                      TAP SEAL TO OPEN
                     </span>
                   </motion.button>
                 )}
