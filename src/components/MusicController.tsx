@@ -32,7 +32,7 @@ export default function MusicController() {
       {showTrackInfo && (
         <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFFDF9]/95 border border-goldFoil/40 shadow-md backdrop-blur-md text-[11px] font-playfair font-semibold text-charcoal-ink animate-fade-in">
           <span className="text-goldFoil">♫</span>
-          <span>Walk of the Bride - Sita Kalyanam</span>
+          <span>Kudmayi Reprise (Female)</span>
         </div>
       )}
 
@@ -40,7 +40,7 @@ export default function MusicController() {
         onClick={toggleMusic}
         type="button"
         aria-label={isPlaying ? "Mute Background Music" : "Play Background Music"}
-        title={isPlaying ? "Mute: Walk of the Bride (Sita Kalyanam)" : "Play: Walk of the Bride (Sita Kalyanam)"}
+        title={isPlaying ? "Mute: Kudmayi Reprise (Female)" : "Play: Kudmayi Reprise (Female)"}
         className="group relative w-11 h-11 rounded-full bg-[#FFFDF9]/95 hover:bg-[#FFFDF9] border border-goldFoil/50 shadow-lg backdrop-blur-md flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 text-charcoal-ink"
       >
         {/* Subtle Gold Outer Ring Glow */}

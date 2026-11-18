@@ -33,42 +33,21 @@ export default function WeddingInvitationPage() {
     if (typeof window === "undefined") return 0;
     return (
       window.pageYOffset ||
-      (document.scrollingElement ? document.scrollingElement.scrollTop : 0) ||
       document.documentElement.scrollTop ||
       document.body.scrollTop ||
       0
     );
   }, []);
 
-  // Cross-browser mobile & desktop scroll setter without duplicate-frame thrashing
+  // Glitch-free hardware-accelerated scroll setter
   const setScrollY = useCallback((y: number) => {
     const targetY = Math.round(y);
     if (targetY === lastTargetYRef.current) return;
     lastTargetYRef.current = targetY;
-
     window.scrollTo(0, targetY);
-    if (typeof window !== "undefined" && Math.abs((window.pageYOffset || 0) - targetY) > 2) {
-      if (document.scrollingElement) {
-        document.scrollingElement.scrollTop = targetY;
-      } else if (document.documentElement) {
-        document.documentElement.scrollTop = targetY;
-      }
-    }
   }, []);
 
-  const getMaxScroll = useCallback(() => {
-    if (typeof window === "undefined") return 0;
-    const doc = document.documentElement;
-    const body = document.body;
-    return Math.max(
-      doc ? doc.scrollHeight : 0,
-      body ? body.scrollHeight : 0,
-      doc ? doc.offsetHeight : 0,
-      body ? body.offsetHeight : 0
-    ) - window.innerHeight;
-  }, []);
-
-  // Background smooth stately automated scroll tour
+  // Background silky-smooth automated scroll tour (zero layout thrashing)
   useEffect(() => {
     if (!isAutoScrolling) {
       if (animationFrameRef.current) {
@@ -79,41 +58,49 @@ export default function WeddingInvitationPage() {
     }
 
     currentPosRef.current = getScrollY();
+    lastTargetYRef.current = Math.round(currentPosRef.current);
     let lastTimestamp: number | null = null;
+
+    // Pre-calculate target pause offset and maxScroll to prevent synchronous layout reflows in 60fps loop
+    const doc = document.documentElement;
+    const body = document.body;
+    const maxScroll = Math.max(
+      doc ? doc.scrollHeight : 0,
+      body ? body.scrollHeight : 0
+    ) - window.innerHeight;
+
+    let scratchTargetY = 999999;
+    const scratchSection = document.getElementById("date-scratch-section");
+    if (scratchSection && !hasTriggeredScratchRef.current) {
+      const rect = scratchSection.getBoundingClientRect();
+      scratchTargetY = rect.top + currentPosRef.current - (window.innerHeight * 0.18);
+    }
 
     const scrollStep = (timestamp: number) => {
       if (!lastTimestamp) lastTimestamp = timestamp;
       const elapsed = timestamp - lastTimestamp;
       lastTimestamp = timestamp;
 
-      const maxScroll = getMaxScroll();
+      // Check if we arrived at "The Date" scratch section
+      if (!hasTriggeredScratchRef.current && currentPosRef.current >= scratchTargetY) {
+        hasTriggeredScratchRef.current = true;
+        setIsAutoScrolling(false);
+        isAutoScrollingRef.current = false;
 
-      // Check if we arrived at "The Date" scratch section!
-      const scratchSection = document.getElementById("date-scratch-section");
-      if (scratchSection && !hasTriggeredScratchRef.current) {
-        const rect = scratchSection.getBoundingClientRect();
-        // Pause auto-scroll right when "The Date" is nicely centered in the viewport
-        if (rect.top <= window.innerHeight * 0.22 && rect.top >= -50) {
-          hasTriggeredScratchRef.current = true;
-          setIsAutoScrolling(false);
-          isAutoScrollingRef.current = false;
+        // Trigger the visible one-by-one auto-scratching sequence!
+        scratchCardRef.current?.triggerAutoScratch();
 
-          // Trigger the visible one-by-one auto-scratching sequence!
-          scratchCardRef.current?.triggerAutoScratch();
-
-          // After watching the 3 boxes scratch one by one + confetti (~4.2s), resume slow auto-scroll!
-          if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
-          resumeTimerRef.current = setTimeout(() => {
-            currentPosRef.current = getScrollY();
-            setIsAutoScrolling(true);
-            isAutoScrollingRef.current = true;
-          }, 4200);
-          return;
-        }
+        // After watching the 3 boxes scratch one by one + confetti (~4.2s), resume slow auto-scroll!
+        if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+        resumeTimerRef.current = setTimeout(() => {
+          currentPosRef.current = getScrollY();
+          setIsAutoScrolling(true);
+          isAutoScrollingRef.current = true;
+        }, 4200);
+        return;
       }
 
-      const currentActual = getScrollY();
-      if (currentActual >= maxScroll - 6 || currentPosRef.current >= maxScroll - 6) {
+      if (currentPosRef.current >= maxScroll - 6) {
         setIsAutoScrolling(false);
         isAutoScrollingRef.current = false;
         if (animationFrameRef.current) {
@@ -123,14 +110,9 @@ export default function WeddingInvitationPage() {
         return;
       }
 
-      // Stately royal glide pace (~38px/sec)
-      const safeDelta = Math.min(elapsed, 40);
-      const deltaPx = (38 * safeDelta) / 1000;
-
-      // Resync accumulator if user manually shifted or if drift occurred
-      if (Math.abs(currentActual - currentPosRef.current) > 40) {
-        currentPosRef.current = currentActual;
-      }
+      // Smooth stately pace (~36px/sec)
+      const safeDelta = Math.min(elapsed, 35);
+      const deltaPx = (36 * safeDelta) / 1000;
 
       currentPosRef.current += deltaPx;
       setScrollY(currentPosRef.current);
@@ -146,7 +128,7 @@ export default function WeddingInvitationPage() {
         animationFrameRef.current = null;
       }
     };
-  }, [isAutoScrolling, getScrollY, setScrollY, getMaxScroll]);
+  }, [isAutoScrolling, getScrollY, setScrollY]);
 
   // Pause temporarily when user interacts, then reliably resume slow auto-scroll after idle
   // Mounted once so the resume timer is NEVER prematurely cleared by state re-renders
@@ -165,7 +147,13 @@ export default function WeddingInvitationPage() {
       resumeTimerRef.current = setTimeout(() => {
         if (!isEnvelopeOpenedRef.current) return;
         const currentActual = getScrollY();
-        const maxScroll = getMaxScroll();
+        const doc = document.documentElement;
+        const body = document.body;
+        const maxScroll = Math.max(
+          doc ? doc.scrollHeight : 0,
+          body ? body.scrollHeight : 0
+        ) - window.innerHeight;
+
         if (currentActual < maxScroll - 15) {
           currentPosRef.current = currentActual;
           setIsAutoScrolling(true);
@@ -215,7 +203,7 @@ export default function WeddingInvitationPage() {
         clearTimeout(resumeTimerRef.current);
       }
     };
-  }, [getScrollY, getMaxScroll]);
+  }, [getScrollY]);
 
   // When first page envelope opens: automatically dissolve first page & start smooth tour
   const handleEnvelopeOpenComplete = useCallback(() => {

@@ -56,13 +56,7 @@ export default function HeroPalaceCourtyard() {
     >
       {/* Royal Matrimonial Header */}
       <div className="w-full max-w-lg text-center mb-3 z-10 px-3">
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="flex flex-col items-center"
-        >
+        <div className="flex flex-col items-center">
           <div className="text-goldFoil mb-1.5">
             <svg width="36" height="18" viewBox="0 0 100 50" fill="currentColor">
               <path d="M50 0 C 40 20, 20 20, 0 35 C 20 30, 40 45, 50 50 C 60 45, 80 30, 100 35 C 80 20, 60 20, 50 0 Z" />
@@ -74,51 +68,31 @@ export default function HeroPalaceCourtyard() {
           <p className="font-playfair text-[10px] sm:text-[11px] tracking-[0.28em] text-charcoal-muted uppercase font-semibold mt-0.5">
             Together with their families
           </p>
-        </motion.div>
+        </div>
       </div>
 
       {/* Romantic Card with Integrated Floral Arch & Couple Artwork - TRUE FULL WIDTH ON MOBILE */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.99 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-        className="relative w-full max-w-lg rounded-none sm:rounded-3xl overflow-hidden shadow-md sm:shadow-xl border-y sm:border-2 border-goldFoil/40 bg-[#FFFDF9] z-10 flex flex-col items-center"
-      >
+      <div className="relative w-full max-w-lg rounded-none sm:rounded-3xl overflow-hidden shadow-md sm:shadow-xl border-y sm:border-2 border-goldFoil/40 bg-[#FFFDF9] z-10 flex flex-col items-center">
         {/* Artwork Display with Integrated Calligraphy inside Arch & Fairy Light Glow */}
         <div className="relative w-full aspect-[9/16] overflow-hidden bg-[#FAF4F0]">
-          {/* Animated 3-Stage Couple Pose Crossfade (Proposal -> Standing Hand in Hand -> Bridal Twirl) */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentPose.src}
-              initial={{ opacity: 0, scale: 0.97 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.02 }}
-              transition={{ duration: 1.1, ease: "easeInOut" }}
-              className="absolute inset-0 w-full h-full"
+          {/* Animated 3-Stage Couple Pose Crossfade - Composited layers with zero blank gaps */}
+          {couplePoses.map((pose, idx) => (
+            <div
+              key={pose.src}
+              className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out pointer-events-none ${
+                currentPoseIndex === idx ? "opacity-100 z-10" : "opacity-0 z-0"
+              }`}
             >
-              <motion.img
-                src={currentPose.src}
-                alt={currentPose.alt}
-                animate={
-                  currentPoseIndex === 2
-                    ? {
-                        // Gentle graceful 3D rotation flourish during the bridal twirl
-                        rotate: [0, 1.2, -1.2, 0],
-                        scale: [1, 1.03, 1],
-                      }
-                    : {
-                        scale: [1, 1.02, 1],
-                      }
-                }
-                transition={{ duration: 4.0, ease: "easeInOut" }}
+              <img
+                src={pose.src}
+                alt={pose.alt}
                 className="w-full h-full object-cover object-top select-none"
               />
-            </motion.div>
-          </AnimatePresence>
+            </div>
+          ))}
 
           {/* Warm Ambient Fairy Light Glints (Procedural Floating Sparks) */}
-          <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 pointer-events-none z-20">
             {/* Sparkle 1 */}
             <motion.div
               animate={{ opacity: [0.2, 0.95, 0.2], scale: [0.8, 1.25, 0.8] }}
@@ -148,7 +122,7 @@ export default function HeroPalaceCourtyard() {
           </div>
 
           {/* Elegant Overlaid Typography Inside the Palace Archway */}
-          <div className="absolute top-[21%] inset-x-0 flex flex-col items-center text-center px-4 sm:px-6 pointer-events-none z-10">
+          <div className="absolute top-[21%] inset-x-0 flex flex-col items-center text-center px-4 sm:px-6 pointer-events-none z-20">
             <span className="font-playfair text-[10px] tracking-[0.3em] uppercase text-goldFoil-dark font-bold">
               The Royal Union
             </span>
@@ -157,18 +131,11 @@ export default function HeroPalaceCourtyard() {
             </h2>
             <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-goldFoil to-transparent mx-auto my-2" />
             
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={currentPose.subtitle}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.8 }}
-                className="font-serif text-[12px] sm:text-sm text-charcoal-soft leading-relaxed italic max-w-[270px]"
-              >
+            <div className="min-h-[44px] flex items-center justify-center">
+              <p className="font-serif text-[12px] sm:text-sm text-charcoal-soft leading-relaxed italic max-w-[270px] transition-opacity duration-700">
                 {currentPose.subtitle}
-              </motion.p>
-            </AnimatePresence>
+              </p>
+            </div>
           </div>
 
           {/* Subtle Story Step Indicator Dots at Bottom of Arch */}
@@ -196,7 +163,7 @@ export default function HeroPalaceCourtyard() {
             Surah Ar-Rum • 30:21
           </span>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }

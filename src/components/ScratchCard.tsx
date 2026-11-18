@@ -385,20 +385,21 @@ const ScratchCard = forwardRef<ScratchCardHandle, ScratchCardProps>(function Scr
   useEffect(() => {
     if (!isEnvelopeOpened) return;
 
-    const handleScrollCheck = () => {
-      if (hasAutoScratchedRef.current) return;
-      const section = document.getElementById("date-scratch-section");
-      if (!section) return;
+    const section = document.getElementById("date-scratch-section");
+    if (!section || hasAutoScratchedRef.current) return;
 
-      const rect = section.getBoundingClientRect();
-      // Only trigger when "The Date" is clearly centered in the middle of the viewport
-      if (rect.top <= window.innerHeight * 0.45 && rect.bottom >= window.innerHeight * 0.35) {
-        startOneByOneScratch();
-      }
-    };
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry && entry.isIntersecting && !hasAutoScratchedRef.current) {
+          startOneByOneScratch();
+        }
+      },
+      { threshold: 0.5 }
+    );
 
-    window.addEventListener("scroll", handleScrollCheck, { passive: true });
-    return () => window.removeEventListener("scroll", handleScrollCheck);
+    observer.observe(section);
+    return () => observer.disconnect();
   }, [isEnvelopeOpened, startOneByOneScratch]);
 
   return (
