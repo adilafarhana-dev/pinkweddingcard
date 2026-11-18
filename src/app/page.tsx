@@ -241,7 +241,7 @@ export default function WeddingInvitationPage() {
       <EnvelopeCover onOpenComplete={handleEnvelopeOpenComplete} />
 
       {/* SECTION 2: Hero & Mughal Palace Courtyard Illustration (Full Screen Width) */}
-      <HeroPalaceCourtyard />
+      <HeroPalaceCourtyard isAutoScrolling={isAutoScrolling} />
 
       {/* INTERACTIVE GOLD FOIL SCRATCH CARD SECTION (AUTO-SCRATCHES ONE BY ONE IN FRONT OF USER) */}
       <ScratchCard ref={scratchCardRef} isEnvelopeOpened={isEnvelopeOpened} />

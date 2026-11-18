@@ -32,25 +32,49 @@ const couplePoses: CouplePose[] = [
   },
 ];
 
-export default function HeroPalaceCourtyard() {
+interface HeroPalaceCourtyardProps {
+  isAutoScrolling?: boolean;
+}
+
+export default function HeroPalaceCourtyard({ isAutoScrolling = false }: HeroPalaceCourtyardProps) {
   const [currentPoseIndex, setCurrentPoseIndex] = useState(0);
+  const [isInView, setIsInView] = useState(true);
+  const sectionRef = React.useRef<HTMLElement>(null);
+
+  // Monitor visibility so we never cycle poses when the hero section is scrolled offscreen
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
+      },
+      { threshold: 0.2 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Automatic romantic progression:
-  // 1. Groom kneeling holding bride's hand
-  // 2. Groom standing holding bride
-  // 3. Bride rotating gracefully
+  // PAUSED during auto-scrolling to eliminate thread-blocking, frame drops, and double-exposure blur!
+  // Resumes only when user is stationary and hero section is in view.
   useEffect(() => {
+    if (isAutoScrolling || !isInView) return;
+
     const timer = setInterval(() => {
       setCurrentPoseIndex((prev) => (prev + 1) % couplePoses.length);
-    }, 4200);
+    }, 4500);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [isAutoScrolling, isInView]);
 
   const currentPose = couplePoses[currentPoseIndex];
 
   return (
     <section
+      ref={sectionRef}
       id="hero-palace-section"
       className="relative w-full pt-6 pb-6 px-0 sm:px-4 flex flex-col items-center justify-center bg-gradient-to-b from-[#F7EBEB] via-[#FFFDF9] to-[#FAF3EE] overflow-hidden"
     >
@@ -75,17 +99,24 @@ export default function HeroPalaceCourtyard() {
       <div className="relative w-full max-w-lg rounded-none sm:rounded-3xl overflow-hidden shadow-md sm:shadow-xl border-y sm:border-2 border-goldFoil/40 bg-[#FFFDF9] z-10 flex flex-col items-center">
         {/* Artwork Display with Integrated Calligraphy inside Arch & Fairy Light Glow */}
         <div className="relative w-full aspect-[9/16] overflow-hidden bg-[#FAF4F0]">
-          {/* Animated 3-Stage Couple Pose Crossfade - Composited layers with zero blank gaps */}
+          {/* Animated 3-Stage Couple Pose Crossfade - Hardware accelerated, crisp 350ms switch, zero double-exposure ghosting */}
           {couplePoses.map((pose, idx) => (
             <div
               key={pose.src}
-              className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out pointer-events-none ${
+              style={{
+                transform: "translateZ(0)",
+                willChange: "opacity",
+                backfaceVisibility: "hidden",
+              }}
+              className={`absolute inset-0 w-full h-full transition-opacity duration-350 ease-out pointer-events-none ${
                 currentPoseIndex === idx ? "opacity-100 z-10" : "opacity-0 z-0"
               }`}
             >
               <img
                 src={pose.src}
                 alt={pose.alt}
+                loading="eager"
+                decoding="async"
                 className="w-full h-full object-cover object-top select-none"
               />
             </div>
@@ -138,16 +169,19 @@ export default function HeroPalaceCourtyard() {
             </div>
           </div>
 
-          {/* Subtle Story Step Indicator Dots at Bottom of Arch */}
-          <div className="absolute bottom-4 inset-x-0 flex items-center justify-center gap-2 z-20 pointer-events-none">
+          {/* Story Step Indicator Dots at Bottom of Arch */}
+          <div className="absolute bottom-4 inset-x-0 flex items-center justify-center gap-2 z-20 pointer-events-auto">
             {couplePoses.map((pose, idx) => (
-              <div
+              <button
                 key={idx}
-                className={`transition-all duration-500 rounded-full ${
+                type="button"
+                onClick={() => setCurrentPoseIndex(idx)}
+                className={`transition-all duration-300 rounded-full cursor-pointer focus:outline-none ${
                   currentPoseIndex === idx
-                    ? "w-5 h-1.5 bg-goldFoil shadow-[0_0_8px_rgba(212,175,55,0.7)]"
-                    : "w-1.5 h-1.5 bg-white/70 backdrop-blur-sm"
+                    ? "w-6 h-1.5 bg-goldFoil shadow-[0_0_8px_rgba(212,175,55,0.7)]"
+                    : "w-1.5 h-1.5 bg-white/70 hover:bg-white backdrop-blur-sm"
                 }`}
+                aria-label={`View ${pose.caption}`}
                 title={pose.caption}
               />
             ))}
