@@ -45,7 +45,7 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
   const handleOpenEnvelope = (clientX?: number, clientY?: number) => {
     if (isOpen) return;
 
-    // Start "Walk of the Bride - Sita Kalyana Vaibhogame" background music
+    // Start Kudmayi Reprise (Female) background music
     if (!audioEngine.getIsPlaying()) {
       audioEngine.startMusic();
     }
