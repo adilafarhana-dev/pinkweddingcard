@@ -49,7 +49,7 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
     // 1. Slowly remove the central floral sticker badge
     setIsStickerRemoved(true);
 
-    // Start Kudmayi Reprise (Female) background music
+    // Start "A Thousand Years (feat. Kyson Facer)" background music
     if (!audioEngine.getIsPlaying()) {
       audioEngine.startMusic();
     }
