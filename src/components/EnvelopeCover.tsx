@@ -45,7 +45,7 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
   const handleOpenEnvelope = (clientX?: number, clientY?: number) => {
     if (isOpen) return;
 
-    // Start "A Thousand Years (feat. Kyson Facer)" background music
+    // Start default background music: "Kudmayi Reprise (Female)"
     if (!audioEngine.getIsPlaying()) {
       audioEngine.startMusic();
     }
