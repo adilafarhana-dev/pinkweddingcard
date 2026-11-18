@@ -46,7 +46,7 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
   const handleOpenEnvelope = (clientX?: number, clientY?: number) => {
     if (isStickerRemoved || isOpen) return;
 
-    // 1. Slowly remove the central floral sticker badge
+    // 1. Slowly lift and remove the central floral sticker badge
     setIsStickerRemoved(true);
 
     // Start "A Thousand Years (feat. Kyson Facer)" background music
@@ -56,7 +56,7 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
 
     // Soft golden particle sparkle at seal center
     const x = clientX ? clientX / window.innerWidth : 0.5;
-    const y = clientY ? clientY / window.innerHeight : 0.46;
+    const y = clientY ? clientY / window.innerHeight : 0.454;
 
     confetti({
       particleCount: 50,
@@ -68,12 +68,12 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
       scalar: 0.95,
     });
 
-    // 2. Once the sticker starts lifting (at 750ms), slowly open the pleated flaps
+    // 2. As the sticker lifts, seamlessly unfold the left and right pleated flaps in 3D
     setTimeout(() => {
       setIsOpen(true);
-    }, 750);
+    }, 350);
 
-    // 3. Flaps unfold slowly (2.8s), then automatically dissolve and remove first page
+    // 3. Flaps unfold slowly (2.8s), then automatically dissolve and reveal the courtyard
     setTimeout(() => {
       setIsDissolved(true);
       document.body.style.overflow = "";
@@ -81,7 +81,7 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
       if (onOpenComplete) {
         onOpenComplete();
       }
-    }, 3600);
+    }, 3200);
   };
 
   const handleResetEnvelope = () => {
@@ -189,9 +189,9 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
             </motion.div>
 
             {/* ========================================================================= */}
-            {/* 3. CENTRAL FLORAL STICKER BADGE (REMOVES SLOWLY ON CLICK/AUTO)             */}
+            {/* 3. CENTRAL FLORAL STICKER BADGE (PERFECTLY COVERS CENTER, REMOVES SLOWLY) */}
             {/* ========================================================================= */}
-            <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
+            <div className="absolute inset-0 pointer-events-none z-30">
               <AnimatePresence>
                 {!isStickerRemoved && (
                   <motion.button
@@ -204,27 +204,32 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
                     exit={{
                       scale: 1.25,
                       opacity: 0,
-                      rotate: 8,
+                      rotate: 6,
                       filter: "blur(2px)",
-                      transition: { duration: 1.3, ease: [0.22, 1, 0.36, 1] },
+                      transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] },
                     }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="pointer-events-auto relative w-28 h-28 sm:w-36 sm:h-36 -translate-y-8 sm:-translate-y-10 rounded-full flex items-center justify-center cursor-pointer transition-transform focus:outline-none"
+                    style={{
+                      top: "45.41%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                    }}
+                    className="pointer-events-auto absolute w-[min(44vw,21vh)] h-[min(44vw,21vh)] min-w-[155px] min-h-[155px] max-w-[215px] max-h-[215px] rounded-full flex items-center justify-center cursor-pointer transition-transform focus:outline-none"
                     aria-label="Tap Floral Sticker to Open Wedding Invitation"
                   >
                     {/* Ambient Glow */}
-                    <div className="absolute -inset-3 rounded-full bg-[radial-gradient(circle,#E8A3B4_0%,#B4556C_40%,transparent_70%)] opacity-35 blur-md pointer-events-none" />
+                    <div className="absolute -inset-2 rounded-full bg-[radial-gradient(circle,#E8A3B4_0%,#B4556C_40%,transparent_70%)] opacity-35 blur-md pointer-events-none" />
 
-                    {/* Exact Floral Sticker Image */}
+                    {/* Exact Floral Sticker Image - Sized to cleanly cover the center */}
                     <img
                       src="/pink-envelope-seal.png"
                       alt="Embossed Floral Sticker Badge"
-                      className="w-full h-full object-contain drop-shadow-[0_10px_25px_rgba(140,50,75,0.4)] select-none pointer-events-none"
+                      className="w-full h-full object-contain drop-shadow-[0_12px_28px_rgba(140,50,75,0.45)] select-none pointer-events-none"
                     />
 
                     {/* Fairy Sparkle Glint */}
-                    <div className="absolute -bottom-1 right-2 text-goldFoil pointer-events-none">
+                    <div className="absolute bottom-1 right-2 text-goldFoil pointer-events-none">
                       <Sparkles className="w-4 h-4 text-[#FFF2C2] drop-shadow-[0_0_6px_rgba(212,175,55,0.8)]" />
                     </div>
                   </motion.button>
@@ -234,23 +239,25 @@ export default function EnvelopeCover({ onOpenComplete }: EnvelopeCoverProps) {
               {/* Bottom Clickable Pill Button: "TAP SEAL TO OPEN" */}
               <AnimatePresence>
                 {!isStickerRemoved && (
-                  <motion.button
-                    type="button"
-                    onClick={(e) => {
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      handleOpenEnvelope(rect.left + rect.width / 2, rect.top + rect.height / 2);
-                    }}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ delay: 0.3 }}
-                    className="pointer-events-auto absolute bottom-10 sm:bottom-14 flex items-center gap-2 px-4 py-2 rounded-full bg-[#FFFDF9]/95 hover:bg-[#FFFDF9] border border-[#E8C5CE] shadow-lg backdrop-blur-md cursor-pointer transition-all active:scale-95"
-                  >
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#B4556C] animate-ping" />
-                    <span className="font-playfair text-[11px] tracking-[0.22em] text-[#6B1724] font-semibold uppercase">
-                      {isStickerRemoved ? "UNSEALING..." : "TAP SEAL TO OPEN"}
-                    </span>
-                  </motion.button>
+                  <div className="absolute bottom-10 sm:bottom-14 inset-x-0 flex justify-center pointer-events-none">
+                    <motion.button
+                      type="button"
+                      onClick={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        handleOpenEnvelope(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                      }}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ delay: 0.3 }}
+                      className="pointer-events-auto flex items-center gap-2 px-4 py-2 rounded-full bg-[#FFFDF9]/95 hover:bg-[#FFFDF9] border border-[#E8C5CE] shadow-lg backdrop-blur-md cursor-pointer transition-all active:scale-95"
+                    >
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#B4556C] animate-ping" />
+                      <span className="font-playfair text-[11px] tracking-[0.22em] text-[#6B1724] font-semibold uppercase">
+                        {isStickerRemoved ? "UNSEALING..." : "TAP SEAL TO OPEN"}
+                      </span>
+                    </motion.button>
+                  </div>
                 )}
               </AnimatePresence>
             </div>
