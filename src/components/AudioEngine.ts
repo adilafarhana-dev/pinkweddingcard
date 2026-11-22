@@ -1,5 +1,5 @@
 // Pure Audio Engine for Royal Digital Wedding Invitation
-// Dedicated solely to playing the default background track "Na Lage Nazar (Payal Dev)"
+// Dedicated solely to playing the background track "Love Story (Cello Version)"
 
 type AudioStateListener = (isPlaying: boolean) => void;
 
@@ -17,7 +17,7 @@ class AudioEngine {
   private initAudioElement() {
     if (this.audio) return;
     try {
-      this.audio = new Audio("/na-lage-nazar.m4a");
+      this.audio = new Audio("/love-story-cello.m4a");
       this.audio.loop = true;
       this.audio.preload = "auto";
       this.audio.volume = 0.85;
@@ -25,7 +25,7 @@ class AudioEngine {
       // Fallback to mp3 if m4a format isn't supported by browser
       this.audio.onerror = () => {
         if (this.audio && this.audio.src.endsWith(".m4a")) {
-          this.audio.src = "/na-lage-nazar.mp3";
+          this.audio.src = "/love-story-cello.mp3";
           this.audio.load();
         }
       };
