@@ -38,37 +38,46 @@ interface HeroPalaceCourtyardProps {
 
 export default function HeroPalaceCourtyard({ isAutoScrolling = false }: HeroPalaceCourtyardProps) {
   const [currentPoseIndex, setCurrentPoseIndex] = useState(0);
-  const [isInView, setIsInView] = useState(true);
   const sectionRef = React.useRef<HTMLElement>(null);
+  const touchStartRef = React.useRef<{ x: number; y: number } | null>(null);
 
-  // Monitor visibility so we never cycle poses when the hero section is scrolled offscreen
+  // Automatic romantic carousel progression:
+  // Automatically advances every 3.5 seconds across all 3 royal couple poses!
+  // Resets timer on user manual interaction.
   useEffect(() => {
-    const el = sectionRef.current;
-    if (!el || typeof IntersectionObserver === "undefined") return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsInView(entry.isIntersecting);
-      },
-      { threshold: 0.2 }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  // Automatic romantic progression:
-  // PAUSED during auto-scrolling to eliminate thread-blocking, frame drops, and double-exposure blur!
-  // Resumes only when user is stationary and hero section is in view.
-  useEffect(() => {
-    if (isAutoScrolling || !isInView) return;
-
     const timer = setInterval(() => {
       setCurrentPoseIndex((prev) => (prev + 1) % couplePoses.length);
-    }, 4500);
+    }, 3500);
 
     return () => clearInterval(timer);
-  }, [isAutoScrolling, isInView]);
+  }, [currentPoseIndex]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length > 0) {
+      touchStartRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+      };
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartRef.current && e.changedTouches.length > 0) {
+      const deltaX = touchStartRef.current.x - e.changedTouches[0].clientX;
+      const deltaY = touchStartRef.current.y - e.changedTouches[0].clientY;
+      // Horizontal swipe only if horizontal movement is dominant and > 40px
+      if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+        if (deltaX > 0) {
+          // Swiped left -> next pose
+          setCurrentPoseIndex((prev) => (prev + 1) % couplePoses.length);
+        } else {
+          // Swiped right -> previous pose
+          setCurrentPoseIndex((prev) => (prev - 1 + couplePoses.length) % couplePoses.length);
+        }
+      }
+      touchStartRef.current = null;
+    }
+  };
 
   const currentPose = couplePoses[currentPoseIndex];
 
@@ -98,8 +107,12 @@ export default function HeroPalaceCourtyard({ isAutoScrolling = false }: HeroPal
       {/* Romantic Card with Integrated Floral Arch & Couple Artwork - TRUE FULL WIDTH ON MOBILE */}
       <div className="relative w-full max-w-lg rounded-none sm:rounded-3xl overflow-hidden shadow-md sm:shadow-xl border-y sm:border-2 border-goldFoil/40 bg-[#FFFDF9] z-10 flex flex-col items-center">
         {/* Artwork Display with Integrated Calligraphy inside Arch & Fairy Light Glow */}
-        <div className="relative w-full aspect-[9/16] overflow-hidden bg-[#FAF4F0]">
-          {/* Animated 3-Stage Couple Pose Crossfade - Hardware accelerated, crisp 350ms switch, zero double-exposure ghosting */}
+        <div
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          className="relative w-full aspect-[9/16] overflow-hidden bg-[#FAF4F0]"
+        >
+          {/* Animated 3-Stage Couple Pose Crossfade - Hardware accelerated, smooth 500ms switch */}
           {couplePoses.map((pose, idx) => (
             <div
               key={pose.src}
@@ -108,7 +121,7 @@ export default function HeroPalaceCourtyard({ isAutoScrolling = false }: HeroPal
                 willChange: "opacity",
                 backfaceVisibility: "hidden",
               }}
-              className={`absolute inset-0 w-full h-full transition-opacity duration-350 ease-out pointer-events-none ${
+              className={`absolute inset-0 w-full h-full transition-opacity duration-500 ease-in-out pointer-events-none ${
                 currentPoseIndex === idx ? "opacity-100 z-10" : "opacity-0 z-0"
               }`}
             >
